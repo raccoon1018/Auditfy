@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Auditfy — 홈</title>
+
+<!-- 로고 전용 폰트 (Projects.html과 동일 패밀리) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    /* 토큰 */
+    --bg:#0b0e13; --bg-elev:#121621; --line:#2a3242; --fg:#e6e9ef; --fg-weak:#aab1bf;
+    --gradA:#5f7cff; --gradB:#9b7cff; --accent:#86e1ff; --danger:#ff6b6b; --ok:#86ffa8;
+    --chip-ink:#0a1530;
+    --radius:18px; --shadow:0 12px 40px rgba(0,0,0,.45);
+    --glass:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+  }
+  body.theme-light{
+    --bg:#f8fafc; --bg-elev:#ffffff; --line:#d7dbe3; --fg:#1c222b; --fg-weak:#556070;
+    --gradA:#4d6bff; --gradB:#e77cff; --accent:#0ea5e9; --danger:#e11d48; --ok:#16a34a;
+    --chip-ink:#e6f2ff; --shadow:0 12px 36px rgba(0,0,0,.1);
+    --glass:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.015));
+  }
+
+  *{ box-sizing:border-box }
+  html,body{ height:100% }
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:14px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,Apple SD Gothic Neo,sans-serif;
+    overflow-x:hidden;
+  }
+
+  /* 배경 */
+  .bg{
+    position:fixed; inset:0; z-index:-2; overflow:hidden;
+    background:
+      radial-gradient(1200px 1200px at 80% -10%, rgba(95,124,255,.25), transparent 60%),
+      radial-gradient(800px 800px at -10% 10%, rgba(155,124,255,.20), transparent 60%),
+      linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+  }
+  .grid{
+    position:fixed; inset:0; z-index:-1; opacity:.25; pointer-events:none;
+    background:
+      linear-gradient(transparent 95%, rgba(134,225,255,.3) 96%),
+      linear-gradient(90deg, transparent 95%, rgba(134,225,255,.3) 96%);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(60% 60% at 58% 10%, black 0%, transparent 70%);
+  }
+
+  /* 상단바 */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px;
+    padding:10px 16px; background:var(--bg-elev); border-bottom:1px solid var(--line);
+    backdrop-filter:saturate(140%) blur(6px);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; user-select:none }
+  .brand .logo{ font-family:'Montserrat',system-ui; font-weight:800; letter-spacing:.3px; font-size:20px; color:var(--fg) }
+  .chip{ font-size:11px; color:var(--fg-weak); border:1px solid var(--line); padding:2px 8px; border-radius:999px; background:var(--glass) }
+  nav{ display:flex; gap:8px; justify-content:center; }
+  nav a{ color:var(--fg-weak); text-decoration:none; padding:8px 10px; border-radius:10px; }
+  nav a:hover{ background:var(--bg); color:var(--fg) }
+  .rightBtns{ display:flex; gap:8px; align-items:center }
+  .btn{
+    border:1px solid var(--line); background:var(--bg); color:var(--fg);
+    padding:9px 12px; border-radius:12px; cursor:pointer; position:relative; overflow:hidden;
+    transition:.2s transform;
+  }
+  .btn:hover{ transform:translateY(-1px) }
+  .btn.grad{ background:linear-gradient(90deg,var(--gradA),var(--gradB)); color:#fff; border-color:transparent }
+  .iconBtn{ width:36px; height:36px; border-radius:999px; display:grid; place-items:center; border:1px solid var(--line); background:var(--bg); cursor:pointer }
+  .iconBtn svg{ width:18px; height:18px; stroke:var(--fg) }
+
+  /* 히어로 */
+  .hero{ position:relative; padding:76px 18px 42px; display:grid; place-items:center; text-align:center; }
+  .heroInner{
+    width:min(1000px,94vw); display:grid; gap:16px; place-items:center;
+    padding:26px; border:1px solid var(--line); border-radius:24px; background:var(--glass); box-shadow:var(--shadow);
+    animation:fadeUp .5s ease-out both .05s;
+  }
+  .heroBadge{
+    display:inline-flex; gap:8px; align-items:center;
+    padding:6px 10px; border:1px dashed var(--line); border-radius:999px; color:var(--fg-weak); background:rgba(255,255,255,.02);
+  }
+
+  /* ======== 제목 애니메이션 (가시성 문제 해결본) ======== */
+  .title{
+    position:relative;
+    font-size:42px; line-height:1.2; font-weight:900; letter-spacing:-.5px; margin:4px 0;
+    --title-grad: linear-gradient(90deg,var(--gradA),var(--gradB));
+    background: var(--title-grad);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; /* reduced-motion에서도 보이도록 부모에도 적용 */
+  }
+  /* 밑줄이 가운데에서 좌우로 펼쳐지는 효과 */
+  .title::after{
+    content:"";
+    position:absolute; left:50%; bottom:-10px; height:3px; width:82%;
+    background: var(--title-grad);
+    transform:translateX(-50%) scaleX(0);
+    transform-origin:center;
+    animation:underline-in .9s cubic-bezier(.2,.8,.2,1) .25s forwards;
+    border-radius:999px;
+  }
+  @keyframes underline-in{ from{ transform:translateX(-50%) scaleX(0); opacity:.6 } to{ transform:translateX(-50%) scaleX(1); opacity:1 } }
+
+  /* 글자 하나씩 위로 떠오르는 캐스케이드 */
+  .title .glyph{
+    display:inline-block;
+    opacity:0; transform:translateY(12px) scale(.98); filter:blur(4px);
+    will-change:transform,opacity,filter;
+    animation: glyph-in .7s cubic-bezier(.2,.8,.2,1) forwards;
+
+    /* 핵심: 각 글자에도 직접 그라데이션 적용 */
+    background: var(--title-grad);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  @keyframes glyph-in{ to{ opacity:1; transform:none; filter:blur(0) } }
+  @media (prefers-reduced-motion: reduce){
+    .title::after{ animation:none; transform:translateX(-50%) scaleX(1) }
+    .title .glyph{ animation:none; opacity:1; transform:none; filter:none }
+  }
+
+  .sub{ color:var(--fg-weak); font-size:16px; max-width:760px }
+  .cta{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:6px }
+
+  /* 플로팅 블롭 */
+  .blob, .blob2{
+    position:absolute; filter:blur(40px); opacity:.55; pointer-events:none; z-index:-1;
+    background:radial-gradient(closest-side, rgba(95,124,255,.55), transparent 70%);
+    width:340px; height:340px; border-radius:50%;
+    animation:float 12s ease-in-out infinite;
+  }
+  .blob{ top:-60px; right:-50px }
+  .blob2{ left:-40px; bottom:-80px; background:radial-gradient(closest-side, rgba(155,124,255,.55), transparent 70%); animation-duration:14s; }
+  @keyframes float{ 0%{ transform:translate(0,0) } 50%{ transform:translate(14px, -10px) scale(1.02) } 100%{ transform:translate(0,0) } }
+
+  /* 섹션 공통 */
+  section{ padding:64px 18px }
+  .container{ width:min(1100px,94vw); margin:0 auto }
+
+  /* 특징 카드 */
+  .features{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px }
+  @media (max-width:980px){ .features{ grid-template-columns:1fr 1fr } }
+  @media (max-width:680px){ .features{ grid-template-columns:1fr } }
+  .card{
+    background:var(--bg-elev); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease; transform:perspective(800px) translateZ(0);
+  }
+  .card:hover{ transform:perspective(800px) rotateX(4deg) rotateY(-3deg) translateY(-2px); border-color:rgba(134,225,255,.55) }
+  .card h3{ margin:6px 0 4px; font-size:18px }
+  .card p{ margin:0; color:var(--fg-weak) }
+  .card .ic{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; border:1px solid var(--line); background:var(--bg); margin-bottom:8px }
+
+  /* 스탯 */
+  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:12px }
+  @media (max-width:900px){ .stats{ grid-template-columns:1fr 1fr } }
+  .stat{ text-align:center; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--bg-elev); }
+  .stat .num{ font-size:26px; font-weight:900; letter-spacing:-.2px; background:linear-gradient(90deg,var(--gradA),var(--gradB)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .stat .cap{ color:var(--fg-weak) }
+
+  /* 웨이브 */
+  .wavewrap{ border:1px solid var(--line); border-radius:18px; padding:14px; background:var(--bg-elev); box-shadow:var(--shadow); margin-top:14px }
+  canvas{ width:100%; height:120px; display:block; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)) }
+
+  /* 타임라인 */
+  .steps{ display:grid; gap:12px; margin-top:8px }
+  .step{ display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:flex-start; padding:12px; border:1px solid var(--line); border-radius:16px; background:var(--bg-elev); }
+  .bullet{ width:30px; height:30px; border-radius:10px; display:grid; place-items:center; border:1px solid var(--line); background:var(--bg); font-weight:800 }
+  .step h4{ margin:4px 0 2px } .step p{ margin:0; color:var(--fg-weak) }
+
+  /* 가격 카드 */
+  .pricing{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px }
+  @media (max-width:980px){ .pricing{ grid-template-columns:1fr 1fr } }
+  @media (max-width:680px){ .pricing{ grid-template-columns:1fr } }
+  .price{ position:relative; padding:18px; border:1px solid var(--line); border-radius:18px; background:var(--bg-elev); box-shadow:var(--shadow); }
+  .price.best{ outline:2px solid var(--gradA) }
+  .price .hd{ display:flex; justify-content:space-between; align-items:center; gap:8px }
+  .price .name{ font-weight:900; }
+  .price .tag{ font-size:11px; border:1px solid var(--line); padding:2px 6px; border-radius:999px; color:var(--fg-weak) }
+  .price .val{ font-size:28px; font-weight:900; margin:12px 0 6px }
+  .price ul{ padding-left:16px; margin:8px 0 0; color:var(--fg-weak) }
+  .price .ft{ margin-top:12px; display:flex; gap:8px; flex-wrap:wrap }
+
+  /* FAQ */
+  .faq{ display:grid; gap:10px }
+  .qa{ border:1px solid var(--line); border-radius:14px; background:var(--bg-elev); overflow:hidden }
+  .q{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:12px 14px; cursor:pointer; }
+  .a{ padding:0 14px; max-height:0; overflow:hidden; transition:max-height .24s ease; color:var(--fg-weak) }
+  .qa.open .a{ padding:10px 14px 14px; max-height:200px }
+
+  /* 푸터 */
+  footer{ border-top:1px solid var(--line); background:var(--bg-elev); padding:16px; color:var(--fg-weak);
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+
+  /* 인뷰 리빌 */
+  .reveal{ opacity:0; transform:translateY(14px); transition:.45s ease }
+  .reveal.show{ opacity:1; transform:none }
+
+  /* 키프레임 */
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+</style>
+</head>
+<body class="theme-dark">
+
+<div class="bg"></div>
+<div class="grid"></div>
+
+<!-- 상단바 -->
+<header class="topbar">
+  <div class="brand">
+    <a href="/home.html" style="text-decoration:none;display:flex;align-items:center;gap:10px">
+      <div class="logo">Auditfy</div>
+      <div class="chip">alpha</div>
+    </a>
+  </div>
+  <nav>
+    <a href="/features.html">기능</a>
+    <a href="/workflow.html">워크플로우</a>
+    <a href="/plan.html">가격</a>
+    <a href="/help.html">지원</a>
+  </nav>
+  <div class="rightBtns">
+    <a class="btn grad" href="/projects.html">내 프로젝트</a>
+  </div>
+</header>
+
+<!-- 히어로 -->
+<section class="hero">
+  <div class="heroInner">
+    <div class="heroBadge">
+      <span>🎧 음원 편집의 새로운 표준</span>
+      <span class="chip">클라우드 연동</span>
+    </div>
+    <h1 class="title" id="heroTitle">한 페이지에서 끝내는 <br/>빠르고 아름다운 음원 편집</h1>
+    <p class="sub">
+      Auditfy는 브라우저에서 바로 작동하는 초경량 음원 편집기예요.
+      프로젝트 저장소와 Auditfy Cloud가 매끄럽게 통합되어, 어디서든
+      불러오고 저장하고 공유할 수 있어요.
+    </p>
+    <div class="cta">
+      <a class="btn grad" href="/projects.html">지금 시작하기</a>
+      <a class="btn" href="/features.html">둘러보기</a>
+    </div>
+  </div>
+  <div class="blob"></div>
+  <div class="blob2"></div>
+</section>
+
+<!-- 기능 (랜딩에도 유지) -->
+<section id="features" class="container reveal">
+  <h2 style="margin:0 0 10px;font-size:22px">주요 기능</h2>
+  <p style="margin:0 0 12px;color:var(--fg-weak)">속도·디자인·생산성을 모두 만족시키는 작업 환경</p>
+
+  <div class="features">
+    <article class="card">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12h3l2 5 4-10 2 5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <h3>실시간 파형·프리뷰</h3>
+      <p>편집 즉시 반영되는 파형과 오디오 미리듣기를 제공해 빠르게 결과를 확인합니다.</p>
+    </article>
+
+    <article class="card">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6h12v12H6zM9 9h6v6H9z" stroke="currentColor" stroke-width="1.8"/></svg></div>
+      <h3>프로젝트 저장소</h3>
+      <p>프로젝트 단위로 버전과 파일을 관리하고, 언제든 이어서 작업할 수 있어요.</p>
+    </article>
+
+    <article class="card">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 17l-4-4 4-4M16 7l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <h3>Auditfy Cloud</h3>
+      <p>브라우저에서 바로 업로드·불러오기. 로그인하면 기기간 동기화가 가능해요.</p>
+    </article>
+
+    <article class="card">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h10M4 17h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <h3>키보드 숏컷</h3>
+      <p>자주 쓰는 명령은 키 입력으로 즉시. 반복 편집 효율이 확 올라갑니다.</p>
+    </article>
+
+    <article class="card">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <h3>모던 UI/애니메이션</h3>
+      <p>그라데이션·글래스·마이크로 인터랙션으로 시각적 몰입도를 높였어요.</p>
+    </article>
+
+    <article class="card">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <h3>필요 없는 건 최소화</h3>
+      <p>가벼운 로딩, 직관적인 구성. 손대지 않아도 될 것은 건드리지 않습니다.</p>
+    </article>
+  </div>
+
+  <!-- 스탯 -->
+  <div class="stats">
+    <div class="stat"><div class="num" data-num="120">0</div><div class="cap">초 만에 처음 편집 완료</div></div>
+    <div class="stat"><div class="num" data-num="50">0</div><div class="cap">MB 프로젝트 저장 (Free)</div></div>
+    <div class="stat"><div class="num" data-num="250">0</div><div class="cap">MB Cloud (Plus)</div></div>
+    <div class="stat"><div class="num" data-num="400">0</div><div class="cap">MB Cloud (Pro)</div></div>
+  </div>
+
+  <!-- 웨이브 캔버스 데모 -->
+  <div class="wavewrap">
+    <canvas id="wave"></canvas>
+  </div>
+</section>
+
+<!-- 워크플로우 (랜딩에도 요약 유지) -->
+<section id="workflow" class="container reveal">
+  <h2 style="margin:0 0 10px;font-size:22px">작업 순서</h2>
+  <p style="margin:0 0 10px;color:var(--fg-weak)">처음부터 끝까지, 브라우저에서 자연스럽게</p>
+  <div class="steps">
+    <div class="step"><div class="bullet">1</div><div><h4>불러오기</h4><p>기기 / Auditfy Cloud / (YouTube 등 확장 예정)에서 오디오를 가져옵니다.</p></div></div>
+    <div class="step"><div class="bullet">2</div><div><h4>편집</h4><p>컷·페이드·볼륨·구간 루프 등을 즉시 프리뷰. 실시간 파형으로 정확도를 높여요.</p></div></div>
+    <div class="step"><div class="bullet">3</div><div><h4>저장</h4><p>프로젝트 저장소에 저장하고, 필요 시 Cloud로 백업·공유합니다.</p></div></div>
+  </div>
+</section>
+
+<!-- 지원(FAQ 요약) -->
+<section id="faq" class="container reveal">
+  <h2 style="margin:0 0 10px;font-size:22px">지원</h2>
+  <div class="faq">
+    <div class="qa">
+      <div class="q"><strong>로그인 없이도 써볼 수 있나요?</strong><span>＋</span></div>
+      <div class="a">가능합니다. 다만 Cloud 저장·동기화는 로그인 후 사용할 수 있어요.</div>
+    </div>
+    <div class="qa">
+      <div class="q"><strong>프로젝트와 Cloud의 차이는?</strong><span>＋</span></div>
+      <div class="a">프로젝트는 편집 상태(메타)를, Cloud는 실제 파일 보관을 담당합니다.</div>
+    </div>
+    <div class="qa">
+      <div class="q"><strong>언제든 플랜 변경이 가능한가요?</strong><span>＋</span></div>
+      <div class="a">네, 마이페이지에서 월 단위로 변경 가능합니다. 변경 시 남은 기간은 자동 정산됩니다.</div>
+    </div>
+    <div class="cta" style="margin-top:8px"><a class="btn" href="/help.html">도움말 전체 보기</a></div>
+  </div>
+</section>
+
+<footer class="container" style="padding:0">
+  <footer>
+    <div>© Auditfy — 브라우저 기반 음원 편집</div>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="/auth.html?next=/projects.html">로그인</a>
+      <a class="btn grad" href="/projects.html">프로젝트 열기</a>
+    </div>
+  </footer>
+</footer>
+
+<script>
+/* ===== Theme ===== */
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+function applySystemTheme() {
+  document.body.classList.toggle('theme-light', !mq.matches);
+}
+mq.addEventListener?.('change', applySystemTheme);
+applySystemTheme();
+
+/* ===== Ripple ===== */
+function addRipple(e){
+  const b=e.currentTarget; const r=document.createElement('span');
+  const rect=b.getBoundingClientRect(); const d=Math.max(rect.width, rect.height);
+  r.style.cssText=`position:absolute;left:${e.clientX-rect.left-d/2}px;top:${e.clientY-rect.top-d/2}px;width:${d}px;height:${d}px;border-radius:999px;background:rgba(255,255,255,.25);transform:scale(0);opacity:.8;pointer-events:none;transition:transform .35s ease, opacity .6s ease;`;
+  b.appendChild(r); requestAnimationFrame(()=>{ r.style.transform='scale(1)'; r.style.opacity='0'; });
+  setTimeout(()=>r.remove(), 600);
+}
+document.querySelectorAll('.btn').forEach(b=> b.addEventListener('pointerdown', addRipple));
+
+/* ===== Reveal on scroll ===== */
+const io=new IntersectionObserver((ents)=>{
+  ents.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); }});
+}, {threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=> io.observe(el));
+
+/* ===== Canvas Wave Demo ===== */
+const cvs=document.getElementById('wave'); const ctx=cvs.getContext('2d');
+function fit(){ const dpr=Math.max(1,window.devicePixelRatio||1); const w=cvs.clientWidth, h=120;
+  cvs.width=w*dpr; cvs.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+fit(); addEventListener('resize', fit);
+let t=0;
+function draw(){
+  const w=cvs.clientWidth, h=120;
+  ctx.clearRect(0,0,w,h);
+  const bars=72; const bw=w/bars;
+  for(let i=0;i<bars;i++){
+    const phase=t*0.02+i*0.35;
+    const amp=(Math.sin(phase)+1)/2;
+    const val= 12 + amp* (h*0.6);
+    const x=i*bw + 2, y=(h-val)/2;
+    const g=ctx.createLinearGradient(0,y,0,y+val);
+    g.addColorStop(0,'#5f7cff'); g.addColorStop(1,'#9b7cff');
+    ctx.fillStyle=g;
+    const radius=6, rw=bw-4, rh=val, r=Math.min(radius, rw/2, rh/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+rw,y,x+rw,y+rh,r);
+    ctx.arcTo(x+rw,y+rh,x,y+rh,r);
+    ctx.arcTo(x,y+rh,x,y,r);
+    ctx.arcTo(x,y,x+rw,y,r);
+    ctx.closePath();
+    ctx.fill();
+  }
+  t+=1;
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ===== Stats Counter ===== */
+function animateCount(el){
+  const target=Number(el.dataset.num||0);
+  const start=0; const dur=900; const t0=performance.now();
+  function tick(now){
+    const k=Math.min(1,(now-t0)/dur);
+    el.textContent = Math.round(start + (target-start)*(1- Math.pow(1-k,3)));
+    if(k<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+document.querySelectorAll('.stat .num').forEach(animateCount);
+
+/* ===== FAQ Toggle ===== */
+document.querySelectorAll('.qa .q').forEach(q=>{
+  q.addEventListener('click',()=>{
+    q.parentElement.classList.toggle('open');
+    const s=q.querySelector('span'); if(s) s.textContent= q.parentElement.classList.contains('open') ? '–' : '＋';
+  });
+});
+
+/* ===== 제목 캐스케이드 구성 (가시성 포함) ===== */
+(function(){
+  const el = document.getElementById('heroTitle');
+  if(!el) return;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return;
+
+  // 텍스트 노드만 글리프 span으로 래핑 (br 등은 유지)
+  const wrapTextNodes = (node)=>{
+    const nodes = Array.from(node.childNodes);
+    nodes.forEach(n=>{
+      if(n.nodeType===3){ // text
+        const text = n.textContent;
+        const frag = document.createDocumentFragment();
+        for(const ch of text){
+          const span = document.createElement('span');
+          span.className = 'glyph';
+          span.textContent = ch;
+          if(ch===' ') span.style.width='0.35em';
+          frag.appendChild(span);
+        }
+        node.replaceChild(frag, n);
+      }else if(n.nodeType===1){ // element (예: <br>)
+        wrapTextNodes(n);
+      }
+    });
+  };
+  wrapTextNodes(el);
+
+  // 순차 지연
+  const glyphs = el.querySelectorAll('.glyph');
+  glyphs.forEach((g,i)=>{ g.style.animationDelay = (0.02*i)+'s'; });
+})();
+</script>
+</body>
+</html>

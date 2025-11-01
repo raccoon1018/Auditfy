@@ -1,0 +1,10 @@
+
+# Dependencies
+/node_modules
+/netlify/functions/node_modules
+
+# Environment variables
+.env
+
+# macOS
+.DS_Store

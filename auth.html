@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Auditfy • 로그인</title>
+
+<!-- 로고 전용 폰트 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0b0e13; --bg-elev:#121621; --line:#2a3242; --fg:#e6e9ef; --fg-weak:#aab1bf;
+    --gradA:#5f7cff; --gradB:#9b7cff; --danger:#ff6b6b; --ok:#86ffa8;
+  }
+  *{ box-sizing:border-box }
+  body{
+    margin:0; font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,Apple SD Gothic Neo,sans-serif;
+    color:var(--fg); background:#000; height:100vh; overflow:hidden; animation:fadeIn .25s ease-out;
+  }
+  @keyframes fadeIn{ from{ opacity:0 } to{ opacity:1 } }
+
+  .bg{ position:fixed; inset:0; background:#000 center/cover no-repeat; filter:brightness(.62) }
+  .bg::after{ content:''; position:absolute; inset:0; background:
+      radial-gradient(ellipse at 20% 10%, rgba(95,124,255,.35), transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(155,124,255,.35), transparent 60%); mix-blend-mode:screen }
+
+  .top{ position:fixed; left:0; right:0; top:0; padding:10px 14px; display:flex; justify-content:space-between; align-items:center }
+  .brand{ display:flex; align-items:center; gap:10px }
+  .logoLink{ display:flex; align-items:center; color:inherit; text-decoration:none; }
+  .logoLink:focus-visible{ outline:2px solid var(--gradA); outline-offset:2px; border-radius:8px; }
+  .logo{ font-family:'Montserrat',system-ui; font-weight:800; letter-spacing:.3px; font-size:20px; color:#fff }
+  .chip{ font-size:11px; color:#e1e6ff; border:1px solid rgba(255,255,255,.35); padding:2px 6px; border-radius:999px }
+
+  .centerWrap{ position:fixed; inset:0; display:grid; place-items:center; padding:16px }
+  .card{
+    width:min(460px,92vw);
+    background:rgba(18,22,33,.86);
+    backdrop-filter: blur(10px);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:16px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    overflow:hidden;
+    animation:pop .18s ease-out;
+  }
+  .hd{ padding:16px 18px; font-weight:800; border-bottom:1px solid rgba(255,255,255,.12) }
+  .tabs{ display:flex; gap:6px; padding:6px 18px 0 18px; flex-wrap:wrap }
+  .tab{ padding:8px 10px; border-radius:999px; cursor:pointer; color:#dfe3ff; border:1px solid rgba(255,255,255,.22); user-select:none; transition:.15s }
+  .tab.active{ background:linear-gradient(90deg,var(--gradA),var(--gradB)); border-color:transparent; color:#fff }
+  .bd{ padding:16px 18px; display:grid; gap:10px; overflow:hidden; animation:slideUp .18s ease }
+  .ft{ padding:12px 18px; border-top:1px solid rgba(255,255,255,.12); display:flex; justify-content:space-between; gap:8px; align-items:center }
+  @keyframes pop{ from{ transform:translateY(8px); opacity:0 } to{ transform:none; opacity:1 } }
+  @keyframes slideUp{ from{ transform:translateY(6px); opacity:.0 } to{ transform:none; opacity:1 } }
+
+  .in{ display:block; width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.25); color:#fff }
+  /* 입력 간 간격 */
+  .in + .in{ margin-top:8px }
+
+  .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+  .btn{ border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.06); color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; transition:.15s }
+  .btn.grad{ background:linear-gradient(90deg,var(--gradA),var(--gradB)); border-color:transparent }
+  .btn:disabled{ opacity:.6; cursor:not-allowed }
+  .muted{ color:#cbd5ff }
+
+  /* 세그먼트(개인/사업체) */
+  .seg{ display:flex; border:1px solid rgba(255,255,255,.25); border-radius:10px; overflow:hidden }
+  .seg button{ flex:1; padding:8px 10px; background:rgba(255,255,255,.06); color:#fff; border:none; cursor:pointer }
+  .seg button.on{ background:linear-gradient(90deg,var(--gradA),var(--gradB)) }
+
+  /* 패스워드 규칙 */
+  .rules{ font-size:12px; color:#cbd5ff; display:grid; gap:4px; margin-top:2px }
+  .rule{ display:flex; align-items:center; gap:6px }
+  .dot{ width:8px; height:8px; border-radius:999px; background:#a6a6a6 }
+  .rule.ok .dot{ background:var(--ok) }
+
+  /* Auditfy 모달 */
+  .modal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:50 }
+  .modal.open{ display:grid }
+  .mcard{ background:#121621; border:1px solid #2a3242; border-radius:14px; width:min(420px,92vw); box-shadow:0 20px 60px rgba(0,0,0,.5); overflow:hidden; animation:pop .16s ease }
+  .mhd{ padding:12px 16px; border-bottom:1px dashed #2a3242; font-weight:800 }
+  .mbd{ padding:14px 16px; display:grid; gap:8px }
+  .mft{ padding:12px 16px; border-top:1px dashed #2a3242; display:flex; justify-content:flex-end; gap:8px }
+
+  /* 경고 */
+  .warn{ color:#ffd9d9; background:rgba(255,0,0,.08); border:1px solid rgba(255,0,0,.25); padding:8px 10px; border-radius:10px; display:none }
+</style>
+</head>
+<body>
+<div id="bg" class="bg"></div>
+
+<div class="top">
+  <div class="brand">
+    <a class="logoLink" href="/projects.html" title="프로젝트로 이동">
+      <span class="logo">Auditfy</span>
+    </a>
+    <div class="chip">alpha</div>
+  </div>
+</div>
+
+<div class="centerWrap">
+  <div class="card">
+    <div class="hd">로그인</div>
+
+    <div class="tabs">
+      <div id="tabSignIn" class="tab active">로그인</div>
+      <div id="tabSignUp" class="tab">회원가입</div>
+    </div>
+
+    <div id="warn" class="warn"></div>
+
+    <!-- 로그인 -->
+    <div id="paneSignIn" class="bd">
+      <input id="inEmail" class="in" type="email" placeholder="이메일" autocomplete="username" />
+      <input id="inPass"  class="in" type="password" placeholder="비밀번호" autocomplete="current-password" />
+
+      <button id="btnSignIn" class="btn grad">계속</button>
+
+      <!-- 하단 행: [비밀번호 찾기] .. 오른쪽 [돌아가기] -->
+      <div class="row" style="justify-content:space-between">
+        <div class="row" style="gap:8px">
+          <button id="btnOpenReset" class="btn" type="button">비밀번호 찾기</button>
+        </div>
+        <a href="/projects.html" class="muted">돌아가기</a>
+      </div>
+    </div>
+
+    <!-- 회원가입 -->
+    <div id="paneSignUp" class="bd" style="display:none">
+      <input id="upName"  class="in" type="text"     placeholder="이름" />
+      <div class="row" style="gap:8px">
+        <input id="upBirth" class="in" type="date"    placeholder="생일" style="flex:1; min-width:160px" />
+        <div class="seg" id="upKind" style="flex:1; min-width:160px">
+          <button type="button" data-v="personal" class="on">개인</button>
+          <button type="button" data-v="business">사업체</button>
+        </div>
+      </div>
+      <input id="upEmail" class="in" type="email"    placeholder="이메일" autocomplete="email" />
+      <input id="upPass"  class="in" type="password" placeholder="비밀번호" autocomplete="new-password" />
+      <input id="upPass2" class="in" type="password" placeholder="비밀번호 확인" autocomplete="new-password" />
+
+      <div class="rules" id="pwRules">
+        <div class="rule" data-k="len"><span class="dot"></span> 8자 이상</div>
+        <div class="rule" data-k="mix"><span class="dot"></span> 대문자/소문자/숫자 포함</div>
+        <div class="rule" data-k="space"><span class="dot"></span> 공백 없이</div>
+        <div class="rule" data-k="match"><span class="dot"></span> 비밀번호 일치</div>
+      </div>
+
+      <button id="btnSignUp" class="btn grad" disabled>가입하기</button>
+      <div class="row" style="justify-content:space-between; align-items:center">
+        <span class="muted">가입하면 약관에 동의한 것으로 간주됩니다. <a href="/terms.html" class="muted" style="text-decoration:underline">약관 보기</a></span>
+        <a href="/projects.html" class="muted">돌아가기</a>
+      </div>
+    </div>
+
+    <div class="ft">
+      <span class="muted">© Auditfy</span>
+      <a class="muted" href="/projects.html">Projects</a>
+    </div>
+  </div>
+</div>
+
+<!-- 비밀번호 찾기(임시 비밀번호 전송) -->
+<div id="resetModal" class="modal">
+  <div class="mcard">
+    <div class="mhd">비밀번호 찾기</div>
+    <div class="mbd">
+      <div class="muted">가입하신 이메일을 입력하면 임시 비밀번호를 전송해 드립니다.</div>
+      <input id="resetEmail" class="in" type="email" placeholder="이메일 입력" />
+      <div id="resetWarn" class="warn" style="display:none"></div>
+      <div class="muted" style="font-size:12px">
+        이메일을 오랜 시간 수취하지 못한 경우 <b>yoon080708@gmail.com</b>으로 문의해 주시면 친절히 도와드리겠습니다.
+      </div>
+    </div>
+    <div class="mft">
+      <button id="resetCancel" class="btn">취소</button>
+      <button id="resetSend" class="btn grad">임시 비밀번호 전송</button>
+    </div>
+  </div>
+</div>
+
+<!-- 슈퍼관리자 선택 -->
+<div id="superChoiceModal" class="modal">
+  <div class="mcard">
+    <div class="mhd">슈퍼관리자 로그인</div>
+    <div class="mbd">
+      <div class="muted">슈퍼관리자 계정으로 로그인했습니다. 어떻게 진행할까요?</div>
+    </div>
+    <div class="mft">
+      <button class="btn" id="superGoNormal">일반 사용자로 계속</button>
+      <button class="btn grad" id="superGoAdmin">슈퍼 관리자 페이지</button>
+    </div>
+  </div>
+</div>
+
+<!-- 슈퍼관리자 마스터키 (2단계) -->
+<div id="masterModal" class="modal">
+  <div class="mcard">
+    <div class="mhd">슈퍼관리자 인증</div>
+    <div class="mbd">
+      <div class="muted">슈퍼관리자 페이지에 들어가기 전에 마스터 패스워드를 입력하세요.</div>
+      <input id="masterKey" class="in" placeholder="1018" />
+      <div id="masterWarn" class="warn" style="display:none"></div>
+    </div>
+    <div class="mft">
+      <button class="btn" id="mCancel">취소</button>
+      <button class="btn grad" id="mOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 이메일 인증 안내 -->
+<div id="verifyModal" class="modal">
+  <div class="mcard">
+    <div class="mhd">이메일 확인 필요</div>
+    <div class="mbd">
+      <div class="muted" style="margin-bottom:12px">가입을 완료하려면 아래 주소로 전송된 인증 메일을 열어 “Confirm your email” 버튼을 눌러 주세요.</div>
+      <div id="verifyEmail" class="muted" style="padding:10px 12px; border:1px solid rgba(255,255,255,.18); border-radius:10px; background:rgba(255,255,255,.05);"></div>
+      <div class="muted" style="margin-top:12px; font-size:12px">메일이 보이지 않으면 스팸함을 확인하거나 1~2분 후 다시 시도해 주세요.</div>
+    </div>
+    <div class="mft">
+      <button class="btn" id="verifyClose">확인</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/cloud.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async()=>{
+    try{
+      if(window.Cloud && typeof Cloud.session==='function'){
+        const sess = await Cloud.session();
+        if(sess){
+          const url = new URL(location.href);
+          const next = url.searchParams.get('next') || '/projects.html';
+          location.replace(next);
+          return;
+        }
+      }
+    }catch(e){ console.error('auth redirect check failed', e); }
+  });
+</script>
+<script>
+Cloud.init();
+
+/* 랜덤 풍경 배경 (Unsplash) */
+(function setBg(){
+  const seeds=['landscape','mountain','sea','city','forest','night','sunset','aerial','desert','lake'];
+  const q = seeds[Math.floor(Math.random()*seeds.length)];
+  const url = `https://source.unsplash.com/1600x900/?${encodeURIComponent(q)}&t=${Date.now()}`;
+  const img = new Image();
+  img.onload = ()=>{ document.getElementById('bg').style.backgroundImage = `url('${url}')`; };
+  img.src = url;
+})();
+
+/* 유틸 */
+const $ = (s,r=document)=>r.querySelector(s);
+const warn = (msg)=>{ const el=$('#warn'); el.textContent=msg||''; el.style.display=msg?'block':'none'; };
+const showVerifyModal = (email)=>{
+  const box=$('#verifyModal'); if(!box) return;
+  $('#verifyEmail').textContent = email || '-';
+  box.classList.add('open');
+};
+$('#verifyClose')?.addEventListener('click', ()=> $('#verifyModal').classList.remove('open'));
+$('#verifyModal')?.addEventListener('click', (e)=>{ if(e.target.id==='verifyModal') $('#verifyModal').classList.remove('open'); });
+
+/* 탭 전환 */
+function showPane(which){
+  warn('');
+  if(which==='in'){
+    $('#tabSignIn').classList.add('active'); $('#tabSignUp').classList.remove('active');
+    $('#paneSignIn').style.display='grid';  $('#paneSignUp').style.display='none';
+    $('#paneSignIn').style.animation='none'; void $('#paneSignIn').offsetWidth; $('#paneSignIn').style.animation='slideUp .18s ease';
+  }else{
+    $('#tabSignUp').classList.add('active'); $('#tabSignIn').classList.remove('active');
+    $('#paneSignUp').style.display='grid';   $('#paneSignIn').style.display='none';
+    $('#paneSignUp').style.animation='none'; void $('#paneSignUp').offsetWidth; $('#paneSignUp').style.animation='slideUp .18s ease';
+  }
+}
+$('#tabSignIn').onclick=()=>showPane('in');
+$('#tabSignUp').onclick=()=>showPane('up');
+
+/* 로그인 */
+let _pendingEmail = null;
+let _normalNext = '/projects.html';
+let _superNext = '/superadmin.html';
+async function doSignIn(){
+  warn('');
+  const email=$('#inEmail').value.trim(), pass=$('#inPass').value;
+  if(!email||!pass){ warn('이메일과 비밀번호를 입력해주세요.'); return; }
+  $('#btnSignIn').disabled = true;
+
+  try{
+    const r = await Cloud.login({email,password:pass});
+    if(!r.ok){ warn(r.error||'로그인 실패'); return; }
+    const user = r.user || {};
+    const nextUrl = new URLSearchParams(location.search).get('next') || '/projects.html';
+    if(user.role === 'super'){
+      _pendingEmail = email;
+      _normalNext = nextUrl || '/projects.html';
+      _superNext = '/superadmin.html';
+      $('#superChoiceModal').classList.add('open');
+      return;
+    }
+    location.href = nextUrl;
+  }catch(e){
+    warn('네트워크 오류로 로그인에 실패했습니다.');
+  }finally{
+    $('#btnSignIn').disabled = false;
+  }
+}
+$('#btnSignIn').onclick=doSignIn;
+
+/* 비밀번호 찾기 모달 */
+const openReset=()=>{ $('#resetWarn').style.display='none'; $('#resetEmail').value=$('#inEmail').value||''; $('#resetModal').classList.add('open'); };
+$('#btnOpenReset').onclick=openReset;
+$('#resetCancel').onclick=()=>$('#resetModal').classList.remove('open');
+$('#resetSend').onclick=async ()=>{
+  const email=$('#resetEmail').value.trim();
+  const box=$('#resetWarn'); box.style.display='none';
+  if(!email){ box.textContent='이메일을 입력해주세요.'; box.style.display='block'; return; }
+  $('#resetSend').disabled=true;
+  try{
+    const r = await (Cloud.requestPasswordReset ? Cloud.requestPasswordReset({email}) : {ok:true});
+    if(!r.ok){ box.textContent=r.error||'전송 실패'; box.style.display='block'; return; }
+    $('#resetModal').classList.remove('open');
+    if(r.tempPassword || r.token){
+      alert(`임시 비밀번호: ${(r.tempPassword||r.token)}\n로그인 후 반드시 변경해주세요.`);
+    }else{
+      alert('임시 비밀번호를 전송했습니다. 메일함을 확인해주세요.');
+    }
+  }catch(e){
+    box.textContent='네트워크 오류로 전송에 실패했습니다.'; box.style.display='block';
+  }finally{
+    $('#resetSend').disabled=false;
+  }
+};
+
+/* 슈퍼관리자 마스터키 */
+$('#mCancel').onclick=()=>{ $('#masterModal').classList.remove('open'); Cloud.logout && Cloud.logout(); warn('마스터키 인증이 취소되었습니다.'); };
+$('#mOk').onclick=()=>{
+  const key=$('#masterKey').value.trim();
+  if(!Cloud.verifyMasterKey || !Cloud.verifyMasterKey(key)){
+    const mw=$('#masterWarn'); mw.textContent='마스터키가 올바르지 않습니다.'; mw.style.display='block'; return;
+  }
+  $('#masterModal').classList.remove('open');
+  location.href = _superNext || '/superadmin.html';
+};
+
+$('#superGoNormal').onclick=()=>{
+  $('#superChoiceModal').classList.remove('open');
+  location.href = _normalNext || '/projects.html';
+};
+$('#superGoAdmin').onclick=()=>{
+  $('#superChoiceModal').classList.remove('open');
+  $('#masterKey').value=''; $('#masterWarn').style.display='none';
+  $('#masterModal').classList.add('open');
+};
+
+/* 회원가입 세그먼트 */
+let kind='personal';
+$('#upKind').addEventListener('click',(e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  $('#upKind').querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); kind=b.dataset.v;
+});
+
+/* 비밀번호 규칙 */
+function validatePw(){
+  const p1=$('#upPass').value, p2=$('#upPass2').value;
+  const okLen   = p1.length>=8;
+  const okMix   = /[a-z]/.test(p1)&&/[A-Z]/.test(p1)&&/[0-9]/.test(p1);
+  const okSpace = !/\s/.test(p1);
+  const okMatch = p1 && (p1===p2);
+  const map={len:okLen,mix:okMix,space:okSpace,match:okMatch};
+  Object.entries(map).forEach(([k,v])=>{
+    const row = document.querySelector(`.rule[data-k="${k}"]`);
+    row.classList.toggle('ok', v);
+  });
+  const allOk = okLen && okMix && okSpace && okMatch;
+  $('#btnSignUp').disabled = !allOk;
+  return allOk;
+}
+$('#upPass').addEventListener('input',validatePw);
+$('#upPass2').addEventListener('input',validatePw);
+
+/* 회원가입 */
+$('#btnSignUp').onclick=async ()=>{
+  warn('');
+  const name=$('#upName').value.trim();
+  const birth=$('#upBirth').value;
+  const email=$('#upEmail').value.trim();
+  const pass=$('#upPass').value;
+  if(!name||!birth||!email||!pass){ warn('모든 필드를 입력해주세요.'); return; }
+  if(!validatePw()){ warn('비밀번호 규칙을 확인하세요.'); return; }
+
+  $('#btnSignUp').disabled=true;
+  try{
+    const r=await Cloud.register({name,email,password:pass,birthday:birth,kind});
+    if(!r.ok){ warn(r.error||'가입 실패'); return; }
+    if(r.pendingEmailConfirmation){
+      showVerifyModal(email);
+      return;
+    }
+    const l=await Cloud.login({email,password:pass});
+    if(l.ok){ location.href='/projects.html'; }
+    else { warn(l.error || '가입은 완료, 로그인에 실패했습니다.'); }
+  }catch(e){
+    warn('네트워크 오류로 가입에 실패했습니다.');
+  }finally{
+    $('#btnSignUp').disabled=false;
+  }
+};
+</script>
+</body>
+</html>

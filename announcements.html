@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Auditfy • 공지사항</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0e13; --bg-elev:#121621; --line:#2a3242; --fg:#e6e9ef; --fg-weak:#aab1bf;
+    --accent:#5f7cff;
+  }
+  body.theme-light{
+    --bg:#f8fafc; --bg-elev:#ffffff; --line:#d7dbe3; --fg:#1c222b; --fg-weak:#556070;
+    --accent:#4d6bff;
+  }
+  *{ box-sizing:border-box }
+  html,body{ height:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:14px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,Apple SD Gothic Neo,sans-serif;
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  header{
+    padding:18px 20px; border-bottom:1px solid var(--line); background:var(--bg-elev);
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Montserrat',system-ui; font-weight:800; font-size:20px; }
+  .brand .logoLink{ display:flex; align-items:center; color:var(--fg); text-decoration:none; }
+  .brand .logoLink:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:8px; }
+  .main{ flex:1; padding:24px 18px; max-width:900px; margin:0 auto; width:100%; }
+  .announceList{ display:grid; gap:18px; }
+  article{ border:1px solid var(--line); border-radius:18px; background:var(--bg-elev); padding:20px; box-shadow:0 12px 30px rgba(0,0,0,0.28); }
+  article h2{ margin:0 0 10px 0; font-size:20px; }
+  article time{ display:block; font-size:12px; color:var(--fg-weak); margin-bottom:12px; }
+  .empty{ border:1px dashed var(--line); border-radius:16px; padding:18px; text-align:center; color:var(--fg-weak); }
+  button, a.btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 12px; border-radius:12px; border:1px solid var(--line); background:var(--bg); color:var(--fg); cursor:pointer; text-decoration:none; font-weight:600; }
+  footer{ border-top:1px solid var(--line); background:var(--bg-elev); padding:12px 18px; font-size:12px; color:var(--fg-weak); text-align:center; }
+</style>
+</head>
+<body class="theme-dark">
+  <header>
+    <div class="brand"><a class="logoLink" href="/projects.html" title="프로젝트로 이동">Auditfy</a></div>
+    <a class="btn" href="/account.html">마이페이지로 돌아가기</a>
+  </header>
+  <main class="main">
+    <h1 style="margin:0 0 20px 0">공지사항</h1>
+    <div id="announceList" class="announceList"></div>
+  </main>
+  <footer>© Auditfy</footer>
+
+  <script>
+    const listEl = document.getElementById('announceList');
+    const params = new URLSearchParams(location.search);
+    const targetId = params.get('id');
+
+    function applyTheme(){
+      try{
+        const pref = localStorage.getItem('auditfy.theme') || 'dark';
+        if(pref==='light' || (pref==='auto' && window.matchMedia('(prefers-color-scheme: light)').matches)){
+          document.body.classList.add('theme-light');
+        }
+      }catch{}
+    }
+
+    async function loadAnnouncements(){
+      try{
+        const res = await fetch('/.netlify/functions/list-announcements');
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const json = await res.json();
+        if(!json?.ok){ throw new Error(json?.error || '공지사항을 불러올 수 없습니다.'); }
+        renderAnnouncements(json.announcements || []);
+      }catch(err){
+        listEl.innerHTML = `<div class="empty">${err.message || '공지사항을 불러올 수 없습니다.'}</div>`;
+      }
+    }
+
+    function renderAnnouncements(list){
+      if(!list.length){
+        listEl.innerHTML = '<div class="empty">표시할 공지사항이 없습니다.</div>';
+        return;
+      }
+      listEl.innerHTML = list.map(item=>{
+        const date = item.created_at ? new Date(item.created_at) : null;
+        const formatted = date ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}` : '';
+        const body = (item.body || '').replace(/\n/g,'<br>');
+        return `<article id="${item.id}">
+          <h2>${item.title}</h2>
+          ${formatted?`<time>${formatted}</time>`:''}
+          <div>${body}</div>
+        </article>`;
+      }).join('');
+      if(targetId){
+        const target = document.getElementById(targetId);
+        if(target){
+          target.scrollIntoView({ behavior:'smooth', block:'start' });
+          target.style.outline = `2px solid ${getComputedStyle(document.body).getPropertyValue('--accent').trim()}`;
+        }
+      }
+    }
+
+    applyTheme();
+    loadAnnouncements();
+  </script>
+</body>
+</html>

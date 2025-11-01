@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Auditfy • Super Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0e13; --bg-elev:#121621; --line:#2a3242; --fg:#e6e9ef; --fg-weak:#aab1bf;
+    --gradA:#5f7cff; --gradB:#9b7cff; --danger:#ff6b6b; --ok:#86ffa8;
+    --menuW: 240px;
+  }
+  body.theme-light{
+    --bg:#f8fafc; --bg-elev:#ffffff; --line:#d7dbe3; --fg:#1c222b; --fg-weak:#556070;
+    --gradA:#4d6bff; --gradB:#e77cff; --danger:#e11d48; --ok:#16a34a;
+  }
+  *{ box-sizing:border-box }
+  html,body{ height:100% }
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,Apple SD Gothic Neo,sans-serif;
+    display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+  .topbar{
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+    gap:12px; padding:10px 16px; background:var(--bg-elev); border-bottom:1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; user-select:none }
+  .brand .logoLink{ display:flex; align-items:center; color:var(--fg); text-decoration:none; }
+  .brand .logoLink:focus-visible{ outline:2px solid var(--gradA); outline-offset:2px; border-radius:8px; }
+  .brand .logo{ font-family:'Montserrat',system-ui; font-weight:800; letter-spacing:.3px; font-size:20px; color:var(--fg) }
+  .brand .chip{ font-size:11px; color:var(--fg-weak); border:1px solid var(--line); padding:2px 6px; border-radius:999px }
+  .centerTitle{ text-align:center; display:flex; justify-content:center; align-items:center; gap:10px }
+  #pageTitle{ font-weight:700 }
+  .rightBtns{ display:flex; justify-content:flex-end; align-items:center; gap:10px }
+  .navBtn{ display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:12px; border:1px solid var(--line); background:var(--bg); color:var(--fg); text-decoration:none; transition:.15s }
+  .navBtn svg{ width:20px; height:20px; stroke:var(--fg); stroke-width:1.6; fill:none }
+  .navBtn:hover{ border-color:var(--gradA); color:#fff; background:linear-gradient(120deg,var(--gradA),var(--gradB)); }
+
+  .main{ flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) var(--menuW); }
+  .content{ padding:20px 22px; overflow:auto; }
+  .menuRail{ border-left:1px solid var(--line); background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.02)); padding:14px 10px; display:flex; flex-direction:column; gap:10px; }
+  .menuLabel{ font-size:12px; font-weight:600; color:var(--fg-weak); padding:0 6px; }
+  .menuBtn{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; cursor:pointer; border:1px solid transparent; background:transparent; color:var(--fg); font:inherit; text-align:left; transition:.15s; }
+  .menuBtn svg{ width:22px; height:22px; stroke:var(--fg); stroke-width:1.7; fill:none; }
+  .menuBtn span{ font-weight:600; }
+  .menuBtn.on{ background:linear-gradient(120deg,var(--gradA),var(--gradB)); color:#fff; border-color:transparent; box-shadow:0 12px 28px rgba(0,0,0,0.25); }
+  .menuBtn.on svg{ stroke:#fff; }
+
+  .panel{ display:none; animation:fade .15s ease-in-out; }
+  .panel.active{ display:block; }
+  @keyframes fade{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:none;} }
+
+  .panelHeader{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; }
+  .panelHeader h2{ margin:0; font-size:20px; }
+  .chip{ display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid var(--line); font-size:11px; color:var(--fg-weak); }
+
+  .card{ border:1px solid var(--line); border-radius:16px; background:var(--bg-elev); padding:18px; box-shadow:0 10px 34px rgba(0,0,0,.25); margin-bottom:18px; }
+  .cardHeader{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  .cardHeader h3{ margin:0; font-size:18px; }
+  .muted{ color:var(--fg-weak); }
+
+  .statGrid{ display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .statCard{ border:1px solid var(--line); border-radius:14px; background:var(--bg); padding:16px; box-shadow:0 6px 20px rgba(0,0,0,.18); display:flex; flex-direction:column; gap:8px; }
+  .statValue{ font-size:22px; font-weight:700; }
+
+  .buttonRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:var(--bg); color:var(--fg); cursor:pointer; font-weight:600; transition:.15s; }
+  .btn.grad{ background:linear-gradient(120deg,var(--gradA),var(--gradB)); border-color:transparent; color:#fff; box-shadow:0 8px 20px rgba(0,0,0,0.25); }
+  .btn.danger{ border-color:var(--danger); color:var(--danger); }
+  .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+  .btn.small{ padding:6px 10px; border-radius:10px; font-size:12px; box-shadow:none; }
+  .btn.small.grad{ box-shadow:0 6px 16px rgba(0,0,0,0.24); }
+
+  .formGrid{ display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+  .formField{ display:flex; flex-direction:column; gap:6px; }
+  label{ font-size:13px; font-weight:600; color:var(--fg-weak); }
+  .in{ padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--fg); font:inherit; }
+
+  .usageGrid{ display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+  .usageCard{ border:1px solid var(--line); border-radius:14px; background:var(--bg-elev); padding:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2); }
+  .usageHeader{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-weight:600; }
+  .progressOuter{ position:relative; width:100%; height:10px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .progressInner{ position:absolute; inset:0; border-radius:999px; background:linear-gradient(120deg,var(--gradA),var(--gradB)); transform-origin:left center; transform:scaleX(var(--ratio,0)); transition:.3s; }
+  .progressCaption{ margin-top:8px; font-size:12px; color:var(--fg-weak); }
+
+  .pricingGrid{ display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .pricingCard{ border:1px solid var(--line); border-radius:14px; background:var(--bg); padding:16px; display:flex; flex-direction:column; gap:8px; box-shadow:0 6px 18px rgba(0,0,0,0.18); }
+  .pricingCard h4{ margin:0; font-size:16px; }
+  .priceTag{ font-size:20px; font-weight:700; }
+  .priceSub{ font-size:12px; color:var(--fg-weak); }
+  .giftTable{ width:100%; overflow-x:auto; font-size:13px; border:1px dashed var(--line); border-radius:12px; padding:0; }
+  .giftTable table{ width:100%; border-collapse:collapse; }
+  .giftTable th, .giftTable td{ padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; }
+  .giftTable th{ font-weight:600; color:var(--fg-weak); background:rgba(255,255,255,0.02); }
+  .giftTable tr:last-child td{ border-bottom:none; }
+  .userTable{ width:100%; overflow-x:auto; font-size:13px; border:1px dashed var(--line); border-radius:12px; }
+  .userTable table{ width:100%; border-collapse:collapse; }
+  .userTable th, .userTable td{ padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:middle; }
+  .userTable th{ font-weight:600; color:var(--fg-weak); background:rgba(255,255,255,0.02); }
+  .userTable tr:last-child td{ border-bottom:none; }
+  .badge{ display:inline-flex; align-items:center; justify-content:center; padding:2px 6px; border-radius:999px; font-size:11px; border:1px solid var(--line); color:var(--fg-weak); }
+  .badge.super{ border-color:var(--accent); color:var(--accent); }
+  .tag{ display:inline-block; padding:2px 6px; border-radius:8px; font-size:11px; background:rgba(95,124,255,0.16); color:var(--accent); }
+  .usageBar{ position:relative; width:100%; height:6px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden; margin-top:6px; }
+  .usageBar::after{ content:''; position:absolute; inset:0; transform-origin:left; transform:scaleX(var(--ratio,0)); background:linear-gradient(120deg,var(--gradA),var(--gradB)); }
+  .planEditWrap{ display:grid; gap:12px; }
+  .planEditCard{ border:1px solid var(--line); border-radius:14px; padding:14px; background:rgba(255,255,255,0.03); display:grid; gap:10px; }
+  .planEditCard h4{ margin:0; font-size:16px; }
+
+  .supportGrid{ display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+  .supportCard{ border:1px solid var(--line); border-radius:14px; background:var(--bg); padding:16px; display:flex; flex-direction:column; gap:8px; box-shadow:0 8px 22px rgba(0,0,0,0.22); }
+  .supportCard ul{ margin:0; padding-left:16px; color:var(--fg-weak); }
+
+  .logArea{ background:var(--bg); border-radius:12px; border:1px dashed var(--line); padding:12px; font-family:ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:12px; color:var(--fg-weak); min-height:80px; }
+
+  .bottombar{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-top:1px solid var(--line); background:var(--bg-elev); color:var(--fg-weak); font-size:12px; }
+
+  #snack{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(14px); background:var(--bg-elev); border:1px solid var(--line); padding:10px 14px; border-radius:12px; opacity:0; transition:.2s; z-index:160; box-shadow:0 10px 30px rgba(0,0,0,0.28); }
+  #snack.show{ opacity:1; transform:translateX(-50%) }
+
+  @media (max-width:1024px){
+    .main{ grid-template-columns:1fr; }
+    .menuRail{ position:sticky; bottom:0; top:auto; flex-direction:row; overflow-x:auto; border-left:none; border-top:1px solid var(--line); background:var(--bg-elev); }
+    .menuBtn{ flex:1; justify-content:center; }
+    .menuBtn span{ display:none; }
+  }
+</style>
+</head>
+<body class="theme-dark">
+  <div class="topbar">
+    <div class="brand">
+      <a class="logoLink" href="/projects.html" title="프로젝트로 이동"><span class="logo">Auditfy</span></a>
+      <div class="chip">super admin</div>
+    </div>
+    <div class="centerTitle"><div id="pageTitle">슈퍼관리자</div></div>
+    <div class="rightBtns">
+      <a class="navBtn" href="/projects.html" title="프로젝트">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span>프로젝트</span>
+      </a>
+      <a class="navBtn" href="/index.html" title="에디터">
+        <svg viewBox="0 0 24 24"><path d="M4 4h8v8H4zM12 12h8v8h-8z"/></svg>
+        <span>에디터</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="content" id="panelWrap">
+      <section class="panel active" data-panel="overview">
+        <div class="panelHeader">
+          <h2>시스템 개요</h2>
+          <span class="chip" id="overviewBadge">업데이트 준비 중…</span>
+        </div>
+        <div class="statGrid" id="overviewStats"></div>
+        <div class="card">
+          <div class="cardHeader">
+            <h3>빠른 작업</h3>
+          </div>
+          <div class="buttonRow">
+            <button class="btn" id="refreshCatalogBtn">플랜 정보 새로고침</button>
+            <button class="btn" id="refreshUsageBtn">스토리지 사용량 새로고침</button>
+            <button class="btn grad" id="downloadCatalogBtn">플랜 카탈로그 다운로드</button>
+          </div>
+          <div class="logArea" id="adminLog" style="margin-top:14px">기록이 여기에 표시됩니다.</div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="members">
+        <div class="panelHeader"><h2>멤버 및 권한</h2></div>
+        <div class="card">
+          <div class="cardHeader"><h3>사용자 목록</h3><span class="chip" id="userUsageSummary">-</span></div>
+          <div class="userTable" id="userTable">사용자 정보를 불러오는 중…</div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>비밀번호 초기화</h3></div>
+          <p class="muted">사용자 요청 시 임시 비밀번호를 발급합니다. 사용자는 이메일을 통해 재설정 링크를 받게 됩니다.</p>
+          <div class="formGrid" style="margin-top:12px">
+            <div class="formField">
+              <label for="resetEmail">이메일</label>
+              <input id="resetEmail" class="in" type="email" placeholder="user@example.com" />
+            </div>
+          </div>
+          <div class="buttonRow" style="margin-top:12px">
+            <button class="btn" id="sendResetBtn">재설정 메일 발송</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>플랜 수동 변경</h3></div>
+          <p class="muted">결제 확인 후 사용자의 플랜과 만료 예정일을 직접 설정합니다.</p>
+          <div class="formGrid" style="margin-top:12px">
+            <div class="formField">
+              <label for="adminPlanEmail">이메일</label>
+              <input id="adminPlanEmail" class="in" type="email" placeholder="user@example.com" />
+            </div>
+            <div class="formField">
+              <label for="adminPlanSelect">플랜</label>
+              <select id="adminPlanSelect" class="in"></select>
+            </div>
+            <div class="formField">
+              <label for="adminPlanExpire">만료일 (선택)</label>
+              <input id="adminPlanExpire" class="in" type="date" />
+            </div>
+          </div>
+          <div class="buttonRow" style="margin-top:12px">
+            <button class="btn grad" id="updatePlanBtn">플랜 업데이트</button>
+          </div>
+          <p class="muted" id="adminPlanStatus" style="margin-top:6px"></p>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="plans">
+        <div class="panelHeader"><h2>플랜 &amp; 결제</h2></div>
+        <div class="card">
+          <div class="cardHeader"><h3>현재 제공 중인 플랜</h3><span class="chip" id="plansUpdatedAt">-</span></div>
+          <div class="pricingGrid" id="plansGrid"></div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>플랜 설정</h3></div>
+          <p class="muted">월 요금과 저장 용량을 수정한 뒤 저장하면 사용자에게 즉시 반영됩니다.</p>
+          <div id="planEditor" class="giftTable" style="margin-top:12px; padding:0;"></div>
+          <div class="buttonRow" style="margin-top:12px">
+            <button class="btn grad" id="savePlanCatalogBtn">플랜 저장</button>
+          </div>
+          <p class="muted" id="planCatalogStatus" style="margin-top:6px"></p>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>기프트 코드 생성</h3></div>
+          <p class="muted">플랜과 기간을 지정해 코드를 발급합니다. 사용자는 계정 페이지에서 코드를 적용할 수 있습니다.</p>
+          <div class="formGrid" style="margin-top:12px">
+            <div class="formField">
+              <label for="giftPlanSelect">플랜</label>
+              <select id="giftPlanSelect" class="in"></select>
+            </div>
+            <div class="formField">
+              <label for="giftMonthsSelect">적용 기간</label>
+              <select id="giftMonthsSelect" class="in">
+                <option value="1">1개월</option>
+                <option value="3">3개월</option>
+                <option value="6">6개월</option>
+                <option value="12">12개월</option>
+              </select>
+            </div>
+            <div class="formField">
+              <label for="giftExpire">만료일 (선택)</label>
+              <input id="giftExpire" class="in" type="date" />
+            </div>
+            <div class="formField">
+              <label for="giftNote">비고 (선택)</label>
+              <input id="giftNote" class="in" type="text" placeholder="예: 2024년 봄 프로모션" />
+            </div>
+          </div>
+          <div class="buttonRow" style="margin-top:12px">
+            <button class="btn grad" id="createGiftCodeBtn">코드 생성</button>
+          </div>
+          <p class="muted" id="giftCreateStatus" style="margin-top:6px"></p>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>기프트 코드 목록</h3></div>
+          <div class="giftTable" id="giftCodeTable">기프트 코드 정보를 불러오는 중…</div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>공지사항 관리</h3></div>
+          <div class="formGrid" style="margin-top:12px">
+            <div class="formField">
+              <label for="announceTitle">제목</label>
+              <input id="announceTitle" class="in" type="text" placeholder="공지 제목" />
+            </div>
+            <div class="formField" style="grid-column:1 / -1">
+              <label for="announceBody">본문</label>
+              <textarea id="announceBody" class="in" rows="4" placeholder="공지 내용을 입력하세요"></textarea>
+            </div>
+            <div class="formField">
+              <label>옵션</label>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:6px; font-size:13px;"><input type="checkbox" id="announceActive" checked /> 활성화</label>
+                <label style="display:flex; align-items:center; gap:6px; font-size:13px;"><input type="checkbox" id="announceBanner" /> 배너로 표시</label>
+              </div>
+            </div>
+          </div>
+          <div class="buttonRow" style="margin-top:12px">
+            <button class="btn grad" id="createAnnouncementBtn">공지 등록</button>
+          </div>
+          <p class="muted" id="announcementStatus" style="margin-top:6px"></p>
+          <div class="giftTable" id="announcementTable" style="margin-top:12px;">공지사항을 불러오는 중…</div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="storage">
+        <div class="panelHeader"><h2>스토리지 현황</h2></div>
+        <div class="card">
+          <div class="cardHeader"><h3>내 계정 사용량</h3></div>
+          <div class="usageGrid">
+            <div class="usageCard">
+              <div class="usageHeader">
+                <span>프로젝트 저장소</span>
+                <span id="projUsageLabel">-</span>
+              </div>
+              <div class="progressOuter"><div class="progressInner" id="projUsageBar"></div></div>
+              <div class="progressCaption" id="projUsageCaption">-</div>
+            </div>
+            <div class="usageCard">
+              <div class="usageHeader">
+                <span>Auditfy Cloud</span>
+                <span id="cloudUsageLabel">-</span>
+              </div>
+              <div class="progressOuter"><div class="progressInner" id="cloudUsageBar"></div></div>
+              <div class="progressCaption" id="cloudUsageCaption">-</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>모니터링 TIPS</h3></div>
+          <ul class="featureList">
+            <li class="featureItem"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg><span>Supabase SQL에서 cloud_files / project_files 집계를 통해 전체 사용량을 파악하세요.</span></li>
+            <li class="featureItem"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg><span>R2 버킷에서 lifecycle 정책을 설정해 장기 미사용 파일을 정리할 수 있습니다.</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="support">
+        <div class="panelHeader"><h2>운영 지원</h2></div>
+        <div class="card">
+          <div class="cardHeader"><h3>연락 채널</h3></div>
+          <div class="supportGrid" style="margin-top:12px">
+            <div class="supportCard">
+              <strong>긴급 이슈</strong>
+              <span class="muted">ops@auditfy.app</span>
+              <ul><li>서비스 중단 / 보안 이슈 신고</li></ul>
+            </div>
+            <div class="supportCard">
+              <strong>결제/영업</strong>
+              <span class="muted">billing@auditfy.app</span>
+              <ul><li>플랜 조정 및 인보이스 발행</li></ul>
+            </div>
+            <div class="supportCard">
+              <strong>개발자 커뮤니티</strong>
+              <span class="muted">discord.gg/auditfy-dev</span>
+              <ul><li>릴리스 노트 및 피드백 논의</li></ul>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>운영 체크리스트</h3></div>
+          <ul class="featureList">
+            <li class="featureItem"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg><span>주 1회 플랜/가격 정책 검토</span></li>
+            <li class="featureItem"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg><span>R2 및 Supabase 지표 모니터링</span></li>
+            <li class="featureItem"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg><span>대시보드/로그 시스템에서 에러 이벤트 확인</span></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <aside class="menuRail" id="menuRail">
+      <div class="menuLabel">관리</div>
+      <button class="menuBtn on" data-panel="overview">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm10 8h8v-6h-8v6zM3 21h8v-6H3v6zm10-8h8V3h-8v10z"/></svg>
+        <span>개요</span>
+      </button>
+      <button class="menuBtn" data-panel="members">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        <span>멤버</span>
+      </button>
+      <button class="menuBtn" data-panel="plans">
+        <svg viewBox="0 0 24 24"><path d="M3 5h18v14H3z"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>
+        <span>플랜</span>
+      </button>
+      <button class="menuBtn" data-panel="storage">
+        <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/><path d="M9 3v3"/><path d="M15 3v3"/><path d="M3 9h18"/></svg>
+        <span>스토리지</span>
+      </button>
+      <button class="menuBtn" data-panel="support">
+        <svg viewBox="0 0 24 24"><path d="M12 18v-2"/><path d="M6 9a6 6 0 0 1 12 0c0 3-3 4-3 4H9s-3-1-3-4"/><path d="m15 22-3-3-3 3"/></svg>
+        <span>지원</span>
+      </button>
+    </aside>
+  </div>
+
+  <div class="bottombar">
+    <div>© Auditfy • Super Admin</div>
+    <div id="statusText">초기화 중…</div>
+  </div>
+
+  <div id="snack">OK</div>
+
+  <div id="userPlanModal" class="modal" aria-hidden="true" style="display:none;">
+    <div class="card" style="width:min(420px,92vw);">
+      <div class="hd">플랜 변경</div>
+      <div class="bd">
+        <div class="formField">
+          <label>사용자</label>
+          <div id="userPlanTarget" class="muted"></div>
+        </div>
+        <div class="formField">
+          <label for="userPlanSelect">플랜</label>
+          <select id="userPlanSelect" class="in"></select>
+        </div>
+        <div class="formField">
+          <label for="userPlanDuration">기간</label>
+          <select id="userPlanDuration" class="in">
+            <option value="0">영구 적용</option>
+            <option value="1">1개월</option>
+            <option value="3">3개월</option>
+            <option value="6">6개월</option>
+            <option value="12">12개월</option>
+          </select>
+        </div>
+      </div>
+      <div class="ft">
+        <button class="btn" id="userPlanCancelBtn">취소</button>
+        <button class="btn grad" id="userPlanSaveBtn">적용</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="/cloud.js"></script>
+  <script>
+    const $ = (s, r=document) => r.querySelector(s);
+    const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+    const snack = (t) => {
+      const el = $('#snack'); el.textContent = t; el.classList.add('show');
+      clearTimeout(snack._timer); snack._timer = setTimeout(()=> el.classList.remove('show'), 1800);
+    };
+
+    const PANEL_TITLES = {
+      overview: '시스템 개요',
+      members: '멤버 및 권한',
+      plans: '플랜',
+      storage: '스토리지',
+      support: '운영 지원'
+    };
+
+    const FALLBACK_PLANS = [
+      { id:'Free', label:'Free', description:'취미 및 테스트 용도에 적합한 무료 플랜', quotas:{ projectBytes:20*1024*1024, cloudBytes:30*1024*1024 }, pricing:{ currency:'KRW', monthly:0, usdMonthly:0 }, perks:['프로젝트 저장소 20MB 제공','Auditfy Cloud 30MB 제공','이메일 지원 (48시간 이내 응답)','기본 내보내기 품질'] },
+      { id:'Plus', label:'Plus', description:'크리에이터를 위한 확장 스토리지와 향상된 지원', quotas:{ projectBytes:50*1024*1024, cloudBytes:250*1024*1024 }, pricing:{ currency:'KRW', monthly:9900, usdMonthly:8 }, perks:['프로젝트 저장소 50MB 제공','Auditfy Cloud 250MB 제공','우선 지원 (24시간 이내 응답)','고급 내보내기 프리셋'] },
+      { id:'Pro', label:'Pro', description:'스튜디오 및 팀 협업에 최적화된 전문가용 플랜', quotas:{ projectBytes:100*1024*1024, cloudBytes:400*1024*1024 }, pricing:{ currency:'KRW', monthly:19900, usdMonthly:16 }, perks:['프로젝트 저장소 100MB 제공','Auditfy Cloud 400MB 제공','프리미엄 지원 (12시간 이내 응답)','전문가용 마스터링 도구'] }
+    ];
+
+    const sysTheme = window.matchMedia('(prefers-color-scheme: dark)');
+    sysTheme.addEventListener?.('change', ()=>{ if(getTheme()==='auto') applyThemeFrom('auto'); });
+
+    const state = {
+      currentPanel:'overview',
+      session:null,
+      plans:FALLBACK_PLANS,
+      catalogUpdatedAt:null,
+      usage:{ cloudBytes:0, projBytes:0 },
+      giftCodes: [],
+      users: [],
+      totalBytes: 0,
+      announcements: [],
+      schema: { planCatalog:false, announcements:false, giftCodes:false }
+    };
+    const userPlanState = { email:null };
+    const LOCKED_EMAIL = 'yoon080708@gmail.com';
+
+    function getTheme(){ return localStorage.getItem('auditfy.theme') || 'dark'; }
+    function applyThemeFrom(value){
+      document.body.classList.toggle('theme-light', value==='light' || (value==='auto' && !sysTheme.matches));
+      localStorage.setItem('auditfy.theme', value);
+    }
+
+    function formatBytes(bytes){
+      if(bytes===Infinity) return '∞';
+      if(!Number.isFinite(bytes) || bytes<0) return '-';
+      if(bytes < 1024) return `${bytes}B`;
+      const units=['KB','MB','GB','TB'];
+      let i=-1; let v=bytes;
+      do{ v/=1024; i++; }while(v>=1024 && i<units.length-1);
+      return `${v.toFixed(v>=100||i===0?0:1)}${units[i]}`;
+    }
+    function formatCurrencyKRW(value){
+      if(value===0) return '무료';
+      return `₩${value.toLocaleString('ko-KR')} /월`;
+    }
+    function formatUSD(value){
+      if(!value) return '';
+      return `$${Number(value).toFixed(0)}/mo`;
+    }
+    function formatDateTime(iso){
+      if(!iso) return '-';
+      const d = new Date(iso);
+      if(isNaN(d.getTime())) return '-';
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      return `${y}-${m}-${day} ${hh}:${mm}`;
+    }
+
+    function activatePanel(panel){
+      state.currentPanel = panel;
+      $$('#panelWrap .panel').forEach(sec=> sec.classList.toggle('active', sec.dataset.panel===panel));
+      $$('#menuRail .menuBtn').forEach(btn=> btn.classList.toggle('on', btn.dataset.panel===panel));
+      $('#pageTitle').textContent = PANEL_TITLES[panel] || '슈퍼관리자';
+    }
+
+    function getCurrentPlan(){
+      const id = state.session?.plan || 'Free';
+      return state.plans.find(p => (p.id || '').toLowerCase() === String(id).toLowerCase()) || state.plans[0];
+    }
+
+    function renderOverview(){
+      const statsWrap = $('#overviewStats');
+      if(statsWrap){
+        const plan = getCurrentPlan();
+        const totalUsed = formatBytes(state.totalBytes || 0);
+        const usersCount = state.users.length;
+        statsWrap.innerHTML = `
+          <div class="statCard"><span class="muted">내 플랜</span><div class="statValue">${plan?.label || '-'}</div><div class="muted">${plan?.description || ''}</div></div>
+          <div class="statCard"><span class="muted">등록된 플랜</span><div class="statValue">${state.plans.length}</div><div class="muted">관리자 페이지 기준</div></div>
+          <div class="statCard"><span class="muted">총 사용자</span><div class="statValue">${usersCount}</div><div class="muted">현재 가입자 수</div></div>
+          <div class="statCard"><span class="muted">전체 사용량</span><div class="statValue">${totalUsed}</div><div class="muted">내 계정: Cloud ${formatBytes(state.usage.cloudBytes)} · 프로젝트 ${formatBytes(state.usage.projBytes)}</div></div>`;
+      }
+      const badge = $('#overviewBadge');
+      if(badge) badge.textContent = state.catalogUpdatedAt ? `업데이트: ${new Date(state.catalogUpdatedAt).toLocaleString('ko-KR')}` : '업데이트 정보 없음';
+    }
+
+    function renderPlans(){
+      const grid = $('#plansGrid');
+      if(grid){
+        grid.innerHTML = state.plans.map(plan=>{
+          const price = formatCurrencyKRW(plan.pricing?.monthly ?? 0);
+          const usd = formatUSD(plan.pricing?.usdMonthly ?? 0);
+          return `<div class="pricingCard">
+            <h4>${plan.label}</h4>
+            <div class="muted">${plan.description || ''}</div>
+            <div class="priceTag">${price}</div>
+            <div class="priceSub">${usd || '&nbsp;'}</div>
+            <div class="muted">프로젝트 ${formatBytes(plan.quotas?.projectBytes || 0)} / Cloud ${formatBytes(plan.quotas?.cloudBytes || 0)}</div>
+          </div>`;
+        }).join('');
+      }
+      $('#plansUpdatedAt').textContent = state.catalogUpdatedAt ? `업데이트: ${new Date(state.catalogUpdatedAt).toLocaleString('ko-KR')}` : '업데이트 정보 없음';
+    }
+
+    function renderPlanEditor(){
+      const wrap = $('#planEditor');
+      if(!wrap) return;
+      if(!state.plans.length){
+        wrap.innerHTML = '<div style="padding:12px; color:var(--fg-weak);">등록된 플랜이 없습니다.</div>';
+        return;
+      }
+      wrap.innerHTML = `<div class="planEditWrap">${state.plans.map(plan=>{
+        const perks = Array.isArray(plan.perks) ? plan.perks.join('\n') : '';
+        const projectMB = Number(plan.quotas?.projectBytes);
+        const cloudMB = Number(plan.quotas?.cloudBytes);
+        const projectValue = Number.isFinite(projectMB) ? Math.round(projectMB/1024/1024) : '';
+        const cloudValue = Number.isFinite(cloudMB) ? Math.round(cloudMB/1024/1024) : '';
+        return `<div class="planEditCard" data-id="${plan.id}">
+          <h4>${plan.id}</h4>
+          <div class="formGrid">
+            <div class="formField">
+              <label>이름</label>
+              <input class="in" type="text" data-field="label" value="${plan.label || ''}" />
+            </div>
+            <div class="formField">
+              <label>월 요금 (KRW)</label>
+              <input class="in" type="number" min="0" data-field="priceMonthly" value="${plan.pricing?.monthly ?? 0}" />
+            </div>
+            <div class="formField">
+              <label>월 요금 (USD)</label>
+              <input class="in" type="number" min="0" data-field="priceUsdMonthly" value="${plan.pricing?.usdMonthly ?? 0}" />
+            </div>
+            <div class="formField">
+              <label>프로젝트 저장소 (MB)</label>
+              <input class="in" type="number" min="0" data-field="projectMB" value="${projectValue}" />
+            </div>
+            <div class="formField">
+              <label>Cloud 저장소 (MB)</label>
+              <input class="in" type="number" min="0" data-field="cloudMB" value="${cloudValue}" />
+            </div>
+            <div class="formField" style="grid-column:1 / -1">
+              <label>설명</label>
+              <input class="in" type="text" data-field="description" value="${plan.description || ''}" />
+            </div>
+            <div class="formField" style="grid-column:1 / -1">
+              <label>혜택 (줄바꿈으로 구분)</label>
+              <textarea class="in" rows="3" data-field="perks">${perks}</textarea>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}</div>`;
+    }
+
+    function collectPlanFormData(){
+      const wrap = $('#planEditor');
+      if(!wrap) return [];
+      return Array.from(wrap.querySelectorAll('.planEditCard')).map(card=>{
+        const id = card.dataset.id;
+        const get = field => card.querySelector(`[data-field="${field}"]`);
+        const label = get('label')?.value?.trim() || '';
+        const priceMonthly = Number(get('priceMonthly')?.value || 0);
+        const priceUsdMonthly = Number(get('priceUsdMonthly')?.value || 0);
+        const projectMB = Number(get('projectMB')?.value || 0);
+        const cloudMB = Number(get('cloudMB')?.value || 0);
+        const description = get('description')?.value?.trim() || '';
+        const perksRaw = get('perks')?.value || '';
+        const perks = perksRaw.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
+        return {
+          id,
+          label,
+          description,
+          quotas: {
+            projectBytes: Math.max(0, projectMB) * 1024 * 1024,
+            cloudBytes: Math.max(0, cloudMB) * 1024 * 1024
+          },
+          pricing: {
+            currency: 'KRW',
+            monthly: Math.max(0, priceMonthly),
+            usdMonthly: Math.max(0, priceUsdMonthly)
+          },
+          perks
+        };
+      });
+    }
+
+    function populatePlanSelects(){
+      const options = state.plans.map(plan=>`<option value="${plan.id}">${plan.label}</option>`).join('');
+      const adminSelect = $('#adminPlanSelect');
+      if(adminSelect) adminSelect.innerHTML = options;
+      const giftSelect = $('#giftPlanSelect');
+      if(giftSelect) giftSelect.innerHTML = options;
+    }
+
+    function renderGiftCodes(){
+      const wrap = $('#giftCodeTable');
+      if(!wrap) return;
+      if(!state.giftCodes.length){
+        wrap.innerHTML = '<div style="padding:12px; font-size:13px; color:var(--fg-weak);">생성된 코드가 없습니다.</div>';
+        return;
+      }
+      const rows = state.giftCodes.map(code=>{
+        const status = code.redeemed_by ? `사용됨 (${code.redeemed_by})` : '미사용';
+        return `<tr>
+          <td><code>${code.code}</code></td>
+          <td>${code.plan_id}</td>
+          <td>${code.months || 0}개월</td>
+          <td>${code.expires_at ? formatDateTime(code.expires_at) : '-'}</td>
+          <td>${status}</td>
+          <td>${code.redeemed_at ? formatDateTime(code.redeemed_at) : '-'}</td>
+        </tr>`;
+      }).join('');
+      wrap.innerHTML = `<table>
+        <thead><tr><th>코드</th><th>플랜</th><th>기간</th><th>만료일</th><th>상태</th><th>사용 시각</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    }
+
+    function renderAnnouncementsAdmin(){
+      const wrap = $('#announcementTable');
+      if(!wrap) return;
+      if(!state.announcements.length){
+        wrap.innerHTML = '<div style="padding:12px; font-size:13px; color:var(--fg-weak);">등록된 공지사항이 없습니다.</div>';
+        return;
+      }
+      wrap.innerHTML = `<table>
+        <thead><tr><th>제목</th><th>상태</th><th>배너</th><th>등록일</th><th>작성자</th><th>작업</th></tr></thead>
+        <tbody>
+          ${state.announcements.map(item=>{
+            const active = item.is_active ? '<span class="badge">활성</span>' : '<span class="badge">비활성</span>';
+            const banner = item.is_banner ? '<span class="badge super">배너</span>' : '<span class="badge">일반</span>';
+            return `<tr data-id="${item.id}">
+              <td>${item.title}</td>
+              <td>${active}</td>
+              <td>${banner}</td>
+              <td>${formatDateTime(item.created_at)}</td>
+              <td>${item.created_by || '-'}</td>
+              <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn small" data-act="toggle-active" data-id="${item.id}">${item.is_active?'비활성화':'활성화'}</button>
+                <button class="btn small" data-act="toggle-banner" data-id="${item.id}">${item.is_banner?'배너 해제':'배너 지정'}</button>
+                <button class="btn small danger" data-act="delete" data-id="${item.id}">삭제</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+
+      wrap.querySelectorAll('button[data-act]').forEach(btn=>{
+        const id = btn.dataset.id;
+        const act = btn.dataset.act;
+        if(act==='toggle-active') btn.addEventListener('click', ()=> toggleAnnouncementActive(id));
+        if(act==='toggle-banner') btn.addEventListener('click', ()=> toggleAnnouncementBanner(id));
+        if(act==='delete') btn.addEventListener('click', ()=> deleteAnnouncement(id));
+      });
+    }
+
+    async function loadUsers(){
+      const wrap = $('#userTable');
+      if(wrap) wrap.innerHTML = '사용자 정보를 불러오는 중…';
+      const summary = $('#userUsageSummary');
+      if(summary) summary.textContent = '총 사용량 계산 중…';
+      const res = await Cloud.admin?.listUsersWithUsage();
+      if(res?.ok){
+        state.users = res.users || [];
+        state.totalBytes = res.totalBytes || 0;
+        renderUsers();
+        renderOverview();
+      }else{
+        if(wrap) wrap.innerHTML = `<div style="padding:12px; color:var(--danger);">${res?.error || '사용자 정보를 불러올 수 없습니다.'}</div>`;
+      }
+    }
+
+    async function loadAnnouncementsAdmin(){
+      const wrap = $('#announcementTable');
+      if(wrap) wrap.innerHTML = '공지사항을 불러오는 중…';
+      const res = await Cloud.admin?.listAnnouncements();
+      if(res?.ok){
+        state.announcements = res.announcements || [];
+        renderAnnouncementsAdmin();
+        state.schema.announcements = false;
+        const status = $('#announcementStatus');
+        if(status) status.textContent='';
+      }else{
+        if(res?.schemaMissing){
+          state.schema.announcements = true;
+          wrap.innerHTML = '<div style="padding:12px; color:var(--danger);">announcements 테이블이 필요합니다. Supabase에서 생성한 후 다시 시도하세요.</div>';
+        }else if(wrap){
+          wrap.innerHTML = `<div style="padding:12px; color:var(--danger);">${res?.error || '공지사항을 불러올 수 없습니다.'}</div>`;
+        }
+      }
+    }
+
+    function openUserPlanModal(email){
+      const user = state.users.find(u=> (u.email||'').toLowerCase() === String(email||'').toLowerCase());
+      if(!user) return;
+      if((user.email||'').toLowerCase() === LOCKED_EMAIL.toLowerCase()){
+        snack('이 계정은 수정할 수 없습니다.');
+        return;
+      }
+      userPlanState.email = user.email;
+      $('#userPlanTarget').textContent = `${user.email} (${user.name || ''})`;
+      const select = $('#userPlanSelect');
+      if(select){
+        select.innerHTML = state.plans.map(plan=>`<option value="${plan.id}" ${String(plan.id||'').toLowerCase()===String(user.plan||'').toLowerCase()?'selected':''}>${plan.label}</option>`).join('');
+      }
+      $('#userPlanDuration').value = '0';
+      const modal = $('#userPlanModal');
+      if(modal){
+        modal.classList.add('open');
+        modal.style.display='grid';
+        modal.setAttribute('aria-hidden','false');
+      }
+    }
+
+    function closeUserPlanModal(){
+      const modal = $('#userPlanModal');
+      if(modal){
+        modal.classList.remove('open');
+        modal.style.display='none';
+        modal.setAttribute('aria-hidden','true');
+      }
+      userPlanState.email = null;
+    }
+
+    async function saveUserPlanFromModal(){
+      if(!userPlanState.email) return;
+      const plan = $('#userPlanSelect')?.value;
+      const duration = Number($('#userPlanDuration')?.value || 0);
+      if(!plan){ snack('플랜을 선택하세요.'); return; }
+      let expiresAt;
+      if(duration > 0){
+        const base = new Date();
+        base.setMonth(base.getMonth() + duration);
+        expiresAt = base.toISOString();
+      }
+      const res = await Cloud.admin?.updatePlan({ email:userPlanState.email, plan, expiresAt });
+      if(res?.ok){
+        snack('플랜을 업데이트했습니다.');
+        closeUserPlanModal();
+        await Promise.all([loadUsers(), refreshCatalog(false)]);
+      }else{
+        snack(res?.error || '플랜을 변경할 수 없습니다.');
+      }
+    }
+
+    async function toggleUserRole(email, currentRole){
+      const lower = String(email||'').toLowerCase();
+      if(lower === LOCKED_EMAIL.toLowerCase()){
+        snack('이 계정은 역할을 변경할 수 없습니다.');
+        return;
+      }
+      const nextRole = (currentRole === 'super') ? 'user' : 'super';
+      if(!confirm(`${email} 계정을 ${nextRole==='super'?'슈퍼관리자':'일반 사용자'}로 변경할까요?`)) return;
+      const res = await Cloud.admin?.updateUserRole({ email, role: nextRole });
+      if(res?.ok){
+        snack('역할을 변경했습니다.');
+        await loadUsers();
+      }else{
+        snack(res?.error || '역할을 변경할 수 없습니다.');
+      }
+    }
+
+    async function deleteUserAccount(email){
+      const lower = String(email||'').toLowerCase();
+      if(lower === LOCKED_EMAIL.toLowerCase()){
+        snack('이 계정은 삭제할 수 없습니다.');
+        return;
+      }
+      if(state.session?.email && lower === String(state.session.email).toLowerCase()){
+        snack('자기 자신은 여기서 삭제할 수 없습니다. 계정 페이지를 이용하세요.');
+        return;
+      }
+      if(!confirm(`${email} 계정을 삭제할까요? 이 작업은 취소할 수 없습니다.`)) return;
+      const res = await Cloud.admin?.deleteUser(email);
+      if(res?.ok){
+        snack('계정을 삭제했습니다.');
+        await loadUsers();
+      }else{
+        snack(res?.error || '계정을 삭제할 수 없습니다.');
+      }
+    }
+
+    async function savePlanCatalog(){
+      const plans = collectPlanFormData();
+      const status = $('#planCatalogStatus');
+      if(!plans.length){
+        if(status) status.textContent = '저장할 데이터가 없습니다.';
+        return;
+      }
+      if(status) status.textContent = '저장 중…';
+      const res = await Cloud.admin?.savePlanCatalog(plans, { replaceAll:true });
+      if(res?.ok){
+        if(status) status.textContent = '저장되었습니다.';
+        snack('플랜 정보를 저장했습니다.');
+        await refreshCatalog(true);
+      }else if(res?.schemaMissing){
+        if(status) status.textContent = 'plan_catalog 테이블이 필요합니다.';
+        snack('plan_catalog 테이블을 생성한 뒤 다시 시도하세요.');
+      }else{
+        if(status) status.textContent = res?.error || '저장에 실패했습니다.';
+        snack(res?.error || '저장에 실패했습니다.');
+      }
+    }
+
+    async function createAnnouncement(){
+      const title = $('#announceTitle')?.value.trim();
+      const body = $('#announceBody')?.value.trim();
+      const isActive = $('#announceActive')?.checked ?? true;
+      const isBanner = $('#announceBanner')?.checked ?? false;
+      const status = $('#announcementStatus');
+      if(!title || !body){ snack('제목과 본문을 입력하세요.'); return; }
+      if(status) status.textContent = '등록 중…';
+      const res = await Cloud.admin?.createAnnouncement({ title, body, isActive, isBanner });
+      if(res?.ok){
+        snack('공지사항을 등록했습니다.');
+        if(status) status.textContent = '등록되었습니다.';
+        $('#announceTitle').value='';
+        $('#announceBody').value='';
+        $('#announceBanner').checked = false;
+        await loadAnnouncementsAdmin();
+      }else if(res?.schemaMissing){
+        state.schema.announcements = true;
+        if(status) status.textContent = 'announcements 테이블이 필요합니다.';
+      }else{
+        if(status) status.textContent = res?.error || '등록에 실패했습니다.';
+        snack(res?.error || '등록에 실패했습니다.');
+      }
+    }
+
+    async function toggleAnnouncementActive(id){
+      const ann = state.announcements.find(a=>a.id===id);
+      if(!ann) return;
+      const res = await Cloud.admin?.updateAnnouncement({ id, isActive: !ann.is_active });
+      if(res?.ok){
+        snack('공지 상태를 변경했습니다.');
+        await loadAnnouncementsAdmin();
+      }else{
+        snack(res?.error || '상태를 변경할 수 없습니다.');
+      }
+    }
+
+    async function toggleAnnouncementBanner(id){
+      const ann = state.announcements.find(a=>a.id===id);
+      if(!ann) return;
+      const res = await Cloud.admin?.updateAnnouncement({ id, isBanner: !ann.is_banner });
+      if(res?.ok){
+        snack('배너 설정을 변경했습니다.');
+        await loadAnnouncementsAdmin();
+      }else{
+        snack(res?.error || '배너 설정을 변경할 수 없습니다.');
+      }
+    }
+
+    async function deleteAnnouncement(id){
+      if(!confirm('해당 공지사항을 삭제할까요?')) return;
+      const res = await Cloud.admin?.deleteAnnouncement(id);
+      if(res?.ok){
+        snack('공지사항을 삭제했습니다.');
+        await loadAnnouncementsAdmin();
+      }else{
+        snack(res?.error || '공지사항을 삭제할 수 없습니다.');
+      }
+    }
+
+    async function loadGiftCodes(){
+      const wrap = $('#giftCodeTable');
+      if(wrap) wrap.innerHTML = '<div style="padding:12px; font-size:13px; color:var(--fg-weak);">기프트 코드 정보를 불러오는 중…</div>';
+      const res = await Cloud.admin?.listGiftCodes?.();
+      if(res?.ok){
+        state.giftCodes = res.codes || [];
+        renderGiftCodes();
+        state.schema.giftCodes = false;
+      }else{
+        if(res?.schemaMissing){
+          state.schema.giftCodes = true;
+          if(wrap) wrap.innerHTML = '<div style="padding:12px; color:var(--danger); font-size:13px;">plan_gift_codes 테이블이 필요합니다. Supabase에서 생성한 후 다시 시도하세요.</div>';
+        }else if(wrap){
+          wrap.innerHTML = `<div style="padding:12px; color:var(--danger); font-size:13px;">${res?.error || '기프트 코드를 불러올 수 없습니다.'}</div>`;
+        }
+      }
+    }
+
+    async function updatePlanForUser(){
+      const status = $('#adminPlanStatus');
+      const email = $('#adminPlanEmail').value.trim();
+      const plan = $('#adminPlanSelect').value;
+      const expireRaw = $('#adminPlanExpire').value.trim();
+      if(!email){ snack('이메일을 입력해주세요.'); return; }
+      if(!plan){ snack('플랜을 선택해주세요.'); return; }
+      status.textContent = '플랜을 적용하는 중…';
+      const res = await Cloud.admin?.updatePlan({ email, plan, expiresAt: expireRaw || undefined });
+      if(res?.ok){
+        status.textContent = `적용 완료: ${res.user?.email} → ${res.user?.plan}`;
+        snack('플랜을 업데이트했습니다.');
+      }else{
+        status.textContent = res?.error || '플랜을 변경할 수 없습니다.';
+        snack(res?.error || '플랜을 변경할 수 없습니다.');
+      }
+    }
+
+    async function createGiftCode(){
+      const status = $('#giftCreateStatus');
+      const planId = $('#giftPlanSelect').value;
+      const months = Number($('#giftMonthsSelect').value || 1);
+      const expires = $('#giftExpire').value.trim();
+      const note = $('#giftNote').value.trim();
+      if(!planId){ snack('플랜을 선택해주세요.'); return; }
+      if(!Number.isFinite(months) || months <= 0){ snack('유효한 기간을 선택해주세요.'); return; }
+      status.textContent = '코드를 생성하는 중…';
+      const res = await Cloud.admin?.createGiftCode({ planId, months, expiresAt: expires || undefined, note: note || undefined });
+      if(res?.ok){
+        status.textContent = `생성 완료: ${res.code?.code}`;
+        snack('기프트 코드를 생성했습니다.');
+        $('#giftNote').value='';
+        $('#giftExpire').value='';
+        await loadGiftCodes();
+      }else if(res?.schemaMissing){
+        state.schema.giftCodes = true;
+        status.textContent = 'plan_gift_codes 테이블이 필요합니다.';
+        snack('plan_gift_codes 테이블을 생성한 뒤 다시 시도하세요.');
+      }else{
+        status.textContent = res?.error || '기프트 코드를 생성할 수 없습니다.';
+        snack(res?.error || '기프트 코드를 생성할 수 없습니다.');
+      }
+    }
+
+    function renderUsers(){
+      const wrap = $('#userTable');
+      const summary = $('#userUsageSummary');
+      if(summary) summary.textContent = `총 사용량 ${formatBytes(state.totalBytes || 0)}`;
+      if(!wrap) return;
+      if(!state.users.length){
+        wrap.innerHTML = '<div style="padding:12px; color:var(--fg-weak);">등록된 사용자가 없습니다.</div>';
+        return;
+      }
+      const rows = state.users.map(user=>{
+        const plan = state.plans.find(p=> (p.id||'').toLowerCase() === String(user.plan||'').toLowerCase());
+        const planTotal = (plan?.quotas?.projectBytes || 0) + (plan?.quotas?.cloudBytes || 0) || Infinity;
+        const ratio = planTotal === Infinity ? 0 : Math.min(1, (user.totalBytes || 0) / planTotal);
+        const locked = String(user.email||'').toLowerCase() === LOCKED_EMAIL.toLowerCase();
+        const roleLabel = user.role?.toLowerCase() === 'super' ? 'super' : 'user';
+        const actions = locked ? '<span class="muted">고정 계정</span>' : `
+          <button class="btn small grad" data-action="plan" data-email="${user.email}">플랜 변경</button>
+          <button class="btn small" data-action="role" data-email="${user.email}" data-role="${roleLabel}">${roleLabel==='super'?'슈퍼 해제':'슈퍼 승급'}</button>
+          <button class="btn small danger" data-action="delete" data-email="${user.email}">계정 삭제</button>`;
+        return `<tr>
+          <td><div>${user.email}</div><div class="muted">${user.name || ''}</div></td>
+          <td>${plan?.label || user.plan || 'Free'}${user.planExpiresAt ? `<div class="muted" style="font-size:11px;">만료: ${formatDateTime(user.planExpiresAt)}</div>`:''}</td>
+          <td>${roleLabel==='super'?'<span class="badge super">SUPER</span>':'<span class="badge">USER</span>'}</td>
+          <td style="min-width:200px;">
+            <div>Cloud ${formatBytes(user.cloudBytes)} · 프로젝트 ${formatBytes(user.projectBytes)}</div>
+            <div class="usageBar" style="--ratio:${(planTotal===Infinity?0:ratio).toFixed(3)}"></div>
+          </td>
+          <td>${formatDateTime(user.createdAt)}</td>
+          <td style="min-width:220px; display:flex; gap:6px; flex-wrap:wrap;">${actions}</td>
+        </tr>`;
+      }).join('');
+      wrap.innerHTML = `<table>
+        <thead><tr><th>사용자</th><th>플랜</th><th>역할</th><th>저장용량</th><th>가입일</th><th>작업</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+      wrap.querySelectorAll('button[data-action]').forEach(btn=>{
+        const email = btn.dataset.email;
+        const action = btn.dataset.action;
+        if(action==='plan') btn.addEventListener('click', ()=> openUserPlanModal(email));
+        if(action==='role') btn.addEventListener('click', ()=> toggleUserRole(email, btn.dataset.role));
+        if(action==='delete') btn.addEventListener('click', ()=> deleteUserAccount(email));
+      });
+    }
+
+    function renderUsage(){
+      const plan = getCurrentPlan();
+      const projQuota = plan?.quotas?.projectBytes ?? 0;
+      const cloudQuota = plan?.quotas?.cloudBytes ?? 0;
+      const projRatio = projQuota>0 ? Math.min(1, state.usage.projBytes / projQuota) : 0;
+      const cloudRatio = cloudQuota>0 ? Math.min(1, state.usage.cloudBytes / cloudQuota) : 0;
+      $('#projUsageLabel').textContent = `${formatBytes(state.usage.projBytes)} / ${formatBytes(projQuota)}`;
+      $('#cloudUsageLabel').textContent = `${formatBytes(state.usage.cloudBytes)} / ${formatBytes(cloudQuota)}`;
+      $('#projUsageBar')?.style.setProperty('--ratio', projRatio.toFixed(3));
+      $('#cloudUsageBar')?.style.setProperty('--ratio', cloudRatio.toFixed(3));
+      $('#projUsageCaption').textContent = projQuota ? `${formatBytes(Math.max(0, projQuota - state.usage.projBytes))} 남음` : '할당 정보 없음';
+      $('#cloudUsageCaption').textContent = cloudQuota ? `${formatBytes(Math.max(0, cloudQuota - state.usage.cloudBytes))} 남음` : '할당 정보 없음';
+    }
+
+    async function refreshUsage(){
+      const usage = await Cloud.refreshUsage?.();
+      if(usage?.ok){
+        state.usage = { cloudBytes: usage.cloudBytes || 0, projBytes: usage.projBytes || 0 };
+        renderUsage();
+        renderOverview();
+        snack('스토리지 사용량을 새로고침했습니다.');
+      }else{
+        snack(usage?.error || '스토리지 정보를 불러오지 못했습니다.');
+      }
+    }
+
+    async function refreshCatalog(force=false){
+      try{
+        const res = await Cloud.planCatalog?.({ force });
+        if(res?.ok && Array.isArray(res.plans)){
+          state.plans = res.plans;
+          state.catalogUpdatedAt = res.updatedAt || null;
+          populatePlanSelects();
+          renderOverview();
+          renderPlans();
+          renderPlanEditor();
+          const status = $('#planCatalogStatus');
+          if(status) status.textContent='';
+          if(force) snack('플랜 카탈로그를 불러왔습니다.');
+        }else{
+          snack(res?.error || '플랜 정보를 불러오지 못했습니다.');
+        }
+      }catch(err){
+        console.error('[SuperAdmin] planCatalog 실패', err);
+        snack('플랜 정보를 불러오지 못했습니다.');
+      }
+    }
+
+    function downloadCatalog(){
+      const blob = new Blob([JSON.stringify({ updatedAt: state.catalogUpdatedAt, plans: state.plans }, null, 2)], { type:'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `auditfy-plan-catalog-${Date.now()}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 1500);
+      snack('플랜 카탈로그 JSON을 다운로드했습니다.');
+    }
+
+    async function boot(){
+      applyThemeFrom(getTheme());
+      Cloud.init?.();
+      try{
+        const sess = await Cloud.session?.();
+        if(!sess){
+          $('#statusText').textContent = '로그인이 필요합니다';
+          setTimeout(()=> location.replace('/auth.html?next=/superadmin.html'), 600);
+          return;
+        }
+        if((sess.role || '').toLowerCase() !== 'super'){
+          snack('슈퍼관리자 전용 페이지입니다.');
+          setTimeout(()=> location.replace('/account.html'), 600);
+          return;
+        }
+        state.session = sess;
+        $('#statusText').textContent = '데이터 불러오는 중…';
+
+        await refreshCatalog(false);
+        await refreshUsage();
+        renderOverview();
+        renderPlans();
+        renderPlanEditor();
+        populatePlanSelects();
+        await Promise.all([loadGiftCodes(), loadUsers(), loadAnnouncementsAdmin()]);
+        $('#statusText').textContent = '준비됨';
+      }catch(err){
+        console.error('[SuperAdmin] boot 실패', err);
+        $('#statusText').textContent = '데이터를 불러오지 못했습니다.';
+        snack('데이터를 불러오지 못했습니다. 다시 시도하세요.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      $$('#menuRail .menuBtn').forEach(btn=> btn.addEventListener('click', ()=> activatePanel(btn.dataset.panel)));
+      $('#refreshCatalogBtn')?.addEventListener('click', ()=> refreshCatalog(true));
+      $('#refreshUsageBtn')?.addEventListener('click', refreshUsage);
+      $('#downloadCatalogBtn')?.addEventListener('click', downloadCatalog);
+      $('#updatePlanBtn')?.addEventListener('click', updatePlanForUser);
+      $('#createGiftCodeBtn')?.addEventListener('click', createGiftCode);
+      $('#savePlanCatalogBtn')?.addEventListener('click', savePlanCatalog);
+      $('#createAnnouncementBtn')?.addEventListener('click', createAnnouncement);
+      $('#sendResetBtn')?.addEventListener('click', async ()=>{
+        const email = $('#resetEmail').value.trim();
+        if(!email){ snack('이메일을 입력해주세요.'); return; }
+        const res = await Cloud.requestPasswordReset?.({ email });
+        snack(res?.ok ? '재설정 메일을 발송했습니다.' : (res?.error || '발송에 실패했습니다.'));
+        if(res?.ok){
+          $('#adminLog').textContent = `[${new Date().toLocaleTimeString()}] ${email} 재설정 메일 발송 완료`;
+        }
+      });
+      populatePlanSelects();
+      $('#userPlanCancelBtn')?.addEventListener('click', closeUserPlanModal);
+      $('#userPlanSaveBtn')?.addEventListener('click', saveUserPlanFromModal);
+      $('#userPlanModal')?.addEventListener('click', (e)=>{ if(e.target===e.currentTarget) closeUserPlanModal(); });
+      boot();
+    });
+  </script>
+</body>
+</html>

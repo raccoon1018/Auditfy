@@ -1,0 +1,175 @@
+
+  :root{
+    --bg:#0b0e13; --bg-elev:#121621; --line:#2a3242; --fg:#e6e9ef; --fg-weak:#aab1bf;
+    --gradA:#5f7cff; --gradB:#9b7cff; --accent:#86e1ff; --danger:#ff6b6b; --ok:#86ffa8;
+    --tracksW: 168px; --ltbarW: 48px; --miniBtn-bg:#171c29; --mask: rgba(0,0,0,.38);
+  }
+  body.theme-light{
+    --bg:#f8fafc; --bg-elev:#ffffff; --line:#d7dbe3; --fg:#1c222b; --fg-weak:#556070;
+    --gradA:#4d6bff; --gradB:#e77cff; --accent:#0ea5e9; --danger:#e11d48; --ok:#16a34a;
+    --miniBtn-bg:#f1f5ff; --mask: rgba(0,0,0,.18);
+  }
+  *{ box-sizing:border-box } html,body{ height:100% }
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,Apple SD Gothic Neo,sans-serif;
+    display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+
+  /* 상단바 */
+  .topbar{
+    display:grid; grid-template-columns:auto 1fr auto; align-items:center;
+    gap:12px; padding:10px 14px; background:var(--bg-elev); border-bottom:1px solid var(--line);
+  }
+  .brandWrap{ display:flex; align-items:center; gap:8px }
+  .iconBtn{ width:32px; height:32px; border-radius:999px; display:grid; place-items:center; cursor:pointer; border:1px solid var(--line); background:var(--bg-elev) }
+  .iconBtn svg{ width:18px; height:18px; fill:none; stroke:var(--fg); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round }
+
+  .brand{ display:flex; align-items:center; gap:10px; user-select:none }
+  .brand .logoLink{ display:flex; align-items:center; color:var(--fg); text-decoration:none; }
+  .brand .logoLink:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:8px; }
+  .brand .logo{ font-family:'Montserrat',system-ui; font-weight:800; letter-spacing:.3px; font-size:20px; color:var(--fg) }
+  .brand .chip{ font-size:11px; color:var(--fg-weak); border:1px solid var(--line); padding:2px 6px; border-radius:999px }
+
+  .centerTitle{ text-align:center; display:flex; justify-content:center; align-items:center; gap:10px }
+  #projectName{ font-weight:700 }
+  #renameBtn{ border:none; background:transparent; color:var(--fg-weak); cursor:pointer }
+
+  .rightBtns{ display:flex; justify-content:flex-end; align-items:center; gap:8px }
+  #avatar{ background:linear-gradient(180deg,#2a2f40,#0f1220); border:none }
+  body.theme-light #avatar{ background:linear-gradient(180deg,#dfe6ff,#b9c7ff) }
+
+  /* 리본 */
+  .ribbon{ border-bottom:1px solid var(--line); background:var(--bg-elev) }
+  .tabs{ display:flex; gap:4px; padding:6px 8px }
+  .tab{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; cursor:pointer; color:var(--fg-weak) }
+  .tab svg{ width:16px; height:16px; stroke:currentColor }
+  .tab.active{ background:linear-gradient(90deg,var(--gradA),var(--gradB)); color:#fff }
+  .panelRow{ display:flex; gap:10px; padding:6px 10px; border-top:1px dashed var(--line); border-bottom:1px solid var(--line); background:var(--bg-elev) }
+  .panel{ display:none; gap:8px; width:100% } .panel.active{ display:flex }
+  .miniGroup{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+  .miniBtn{ display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; background:var(--miniBtn-bg); border:1px solid var(--line); cursor:pointer; color:var(--fg) }
+  .miniBtn .t{ font-weight:600; color:var(--fg) } .miniBtn svg{ width:16px; height:16px; stroke:var(--fg) }
+  .chip{ border:1px solid var(--line); border-radius:999px; padding:3px 8px; font-size:12px; color:var(--fg-weak) }
+
+  /* 메인 */
+  .main{ flex:1; min-height:0; display:grid; grid-template-rows:30px 1fr auto }
+  .ruler{ height:30px; position:relative; overflow:hidden; border-bottom:1px solid var(--line); background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.02)) }
+  #rulerInner{ position:absolute; inset:0; margin-left: calc(var(--ltbarW) + var(--tracksW));}
+  .workspace{ display:grid; grid-template-columns: var(--ltbarW) var(--tracksW) 1fr; height:100%; min-height:0; overflow:hidden }
+  .leftbar{ border-right:1px solid var(--line); background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.02)); display:flex; flex-direction:column; align-items:center; gap:8px; padding:8px 6px }
+  .ltBtn{ width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:var(--bg-elev); display:grid; place-items:center; cursor:pointer }
+  .ltBtn.on{ outline:2px solid var(--gradA) }
+  .ltBtn svg{ width:18px; height:18px; stroke:var(--fg) }
+  .tracksCol{ border-right:1px solid var(--line); background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.02)) }
+  .track-row{ height:56px; display:flex; align-items:center; padding:0 10px; border-bottom:1px dashed var(--line); color:var(--fg-weak) }
+  .laneWrap{ overflow:auto; position:relative; min-width:0; background:linear-gradient(180deg,rgba(255,255,255,.015),rgba(0,0,0,.03)) }
+  .timeline{ position:relative; height:100%; min-width:600px }
+  .clips{ position:relative; min-height:100% }
+  .clip{
+    position:absolute; height:44px; border:1px solid transparent; border-radius:10px; display:flex; align-items:center; gap:10px;
+    padding:0 10px; color:#fff; box-shadow:0 4px 12px rgba(0,0,0,.22); cursor:move; overflow:hidden;
+  }
+  .clip .hL,.clip .hR{ width:8px; height:100%; opacity:.33; background:rgba(0,0,0,.25); cursor:ew-resize }
+  .clip .hL{ border-radius:10px 0 0 10px; margin-right:6px }
+  .clip .hR{ border-radius:0 10px 10px 0; margin-left:6px }
+  .clip .label{ position:relative; z-index:2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .clip canvas.clipWave{ position:absolute; inset:4px 6px; width:calc(100% - 12px); height:calc(100% - 8px); pointer-events:none; opacity:.6; mix-blend-mode:screen; border-radius:6px; display:block; }
+  #playhead{ position:absolute; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--accent),transparent) }
+  .marker{ position:absolute; top:0; bottom:0; width:2px; background:linear-gradient(180deg,#ffd36b,transparent) }
+
+  /* 하단 도크 */
+  .dock{ display:grid; grid-template-columns: 1fr 340px; gap:10px; padding:8px 10px; border-top:1px solid var(--line); background:var(--bg-elev) }
+  .filehub{ border:1px dashed var(--line); border-radius:12px; min-height:92px; display:flex; flex-direction:column; min-width:0 }
+  .fh-head{ display:flex; align-items:center; justify-content:space-between; padding:6px 10px; border-bottom:1px dashed var(--line) }
+  .fh-list{ flex:1; overflow:auto; padding:6px 8px; display:flex; flex-direction:column; gap:6px; min-height:60px }
+  .fh-item{ display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--bg); cursor:grab }
+  .fh-item .ic{ width:16px; height:16px; stroke:var(--fg); fill:none }
+  .fh-item .sp{ flex:1 }
+  .fh-del{ border:none; background:transparent; color:var(--fg-weak); cursor:pointer }
+  .drop{ padding:10px; text-align:center; color:var(--fg-weak) }
+
+  .xray{ border:1px dashed var(--line); border-radius:12px; min-height:92px; display:flex; flex-direction:column }
+  .x-head{ padding:6px 10px; border-bottom:1px dashed var(--line); display:flex; justify-content:space-between; align-items:center }
+  .x-body{ padding:10px }
+  #xrayWave{ width:100%; height:64px; background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.02)); border:1px solid var(--line); border-radius:10px }
+  canvas#xrayWave{ width:100%; height:64px }
+
+  /* 하단 상태바 */
+  .bottombar{ display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-top:1px solid var(--line); background:var(--bg-elev); gap:12px }
+  .status{ display:flex; align-items:center; gap:10px; color:var(--fg-weak) }
+  .vu{ display:flex; align-items:flex-end; gap:3px; height:12px }
+  .vu div{ width:6px; height:2px; background:linear-gradient(180deg,var(--ok),#1f9d57); border-radius:2px }
+
+  /* 도크/모달/스낵바/입력 */
+  .dockPanel{ position:fixed; min-width:280px; border:1px solid var(--line); background:var(--bg-elev);
+    right:12px; top:52px; border-radius:14px; box-shadow:0 8px 34px rgba(0,0,0,.35); display:none; z-index:100 }
+  .dockPanel.open{ display:block } .dockPanel .row{ padding:10px 12px; border-bottom:1px dashed var(--line) }
+  .dockPanel .row:last-child{ border-bottom:none } .dockPanel .title{ font-weight:700 }
+  .dockPanel .btn{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--bg); cursor:pointer }
+
+  .ui-toggle{ display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); padding:6px 10px; border-radius:999px; cursor:pointer }
+  .ui-toggle.on{ background:linear-gradient(90deg,var(--gradA),var(--gradB)); color:#fff; border-color:transparent }
+  .ui-select{ position:relative; display:inline-flex; align-items:center; gap:8px }
+  .ui-select > button{ border:1px solid var(--line); background:var(--bg); padding:6px 10px; border-radius:10px; color:var(--fg) }
+  .ui-select .menu{ position:absolute; top:40px; left:0; background:var(--bg-elev); border:1px solid var(--line); border-radius:10px; display:none; min-width:160px; padding:6px; z-index:200 }
+  .ui-select.open .menu{ display:block } .ui-select .opt{ padding:8px 10px; border-radius:8px; cursor:pointer }
+  .ui-select .opt:hover{ background:var(--bg) }
+
+  .modal{ position:fixed; inset:0; display:none; place-items:center; background:var(--mask); z-index:90 }
+  .modal.open{ display:grid }
+  .modal .card{ background:var(--bg-elev); border:1px solid var(--line); border-radius:16px; min-width:320px; max-width:860px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45); overflow:hidden; animation:pop .16s ease-out }
+  @keyframes pop{ from{ transform:translateY(6px); opacity:0 } to{ transform:none; opacity:1 } }
+  .card .hd{ padding:12px 16px; font-weight:800; border-bottom:1px dashed var(--line) }
+  .card .bd{ padding:14px 16px } .card .ft{ padding:12px 16px; display:flex; justify-content:flex-end; gap:8px; border-top:1px dashed var(--line) }
+  .btn{ border:1px solid var(--line); background:var(--bg); color:var(--fg); padding:8px 12px; border-radius:10px; cursor:pointer }
+  .btn.grad{ background:linear-gradient(90deg,var(--gradA),var(--gradB)); border-color:transparent; color:#fff }
+  .in{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--fg) }
+
+  .modalList{ display:flex; flex-direction:column; gap:10px }
+  .optionBtn{ display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--bg); cursor:pointer; text-align:left; color:var(--fg) }
+  .optionBtn:hover{ background:linear-gradient(90deg,var(--gradA),var(--gradB)); border-color:transparent; color:#fff }
+  .optionBtn svg{ width:22px; height:22px; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; fill:none }
+  .optionBtn .opt-meta{ display:flex; flex-direction:column; gap:2px }
+  .optionBtn .opt-meta strong{ font-size:14px }
+  .optionBtn .opt-meta span{ font-size:12px; color:var(--fg-weak) }
+  .optionBtn:hover .opt-meta span{ color:#f0f4ff }
+  .optionBtn.disabled{ opacity:.5; cursor:not-allowed }
+  .optionBtn.disabled:hover{ background:var(--bg); border:1px solid var(--line); color:var(--fg-weak) }
+  .optionBtn.disabled .opt-meta span{ color:var(--fg-weak) }
+
+  .recordStatus{ display:flex; align-items:center; gap:10px; font-size:14px; margin-bottom:10px }
+  .recordStatus .dot{ width:10px; height:10px; border-radius:50%; background:var(--danger); animation:blink 1s ease-in-out infinite }
+  .recordStatus.off .dot{ background:var(--fg-weak); animation:none }
+  @keyframes blink{ from{ opacity:.3 } to{ opacity:1 } }
+  #recordTimer{ font-size:32px; font-weight:700; letter-spacing:2px }
+  .recordHint{ font-size:12px; color:var(--fg-weak) }
+
+  #snack{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(14px); background:var(--bg-elev);
+    border:1px solid var(--line); padding:8px 12px; border-radius:10px; opacity:0; transition:.2s; z-index:130 }
+  #snack.show{ opacity:1; transform:translateX(-50%) }
+  #loading{ position:fixed; inset:0; display:none; place-items:center; background:var(--mask); z-index:120 }
+  #loading.open{ display:grid } .spinner{ width:64px; height:64px; border-radius:50%;
+    background: conic-gradient(from 0deg, var(--gradA), var(--gradB));
+    -webkit-mask: radial-gradient(circle 24px at center, transparent 22px, #000 23px);
+            mask: radial-gradient(circle 24px at center, transparent 22px, #000 23px);
+    animation:spin 1s linear infinite } @keyframes spin{ to{ transform:rotate(360deg) } }
+
+  /* 컨텍스트 메뉴 */
+  #clipMenu{ position:fixed; display:none; background:var(--bg-elev); border:1px solid var(--line); border-radius:10px; z-index:200; overflow:hidden }
+  #clipMenu.open{ display:block }
+  #clipMenu .mi{ padding:8px 12px; cursor:pointer; border-bottom:1px dashed var(--line) }
+  #clipMenu .mi:last-child{ border-bottom:none }
+  #clipMenu .mi:hover{ background:var(--bg) }
+
+  /* QuickEdit 선택 가시성 */
+  .qe-item{ position:relative }
+  .qe-item.active{ outline:2px solid var(--gradA); background:linear-gradient(90deg, rgba(95,124,255,.15), rgba(155,124,255,.10)); }
+  .qe-item::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:4px 0 0 4px; background:transparent }
+  .qe-item.active::before{ background:linear-gradient(180deg,var(--gradA),var(--gradB)) }
+
+  input[type=file]{ display:none }
+
+  /* ◎ 비로그인(guest)일 때 Cloud 관련 버튼 숨김 */
+  body[data-auth="guest"] .cloudOnly{ display:none !important; }
